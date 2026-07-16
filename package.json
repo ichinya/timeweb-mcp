@@ -1,0 +1,50 @@
+{
+  "name": "timeweb-mcp-server",
+  "version": "0.1.5",
+  "description": "MCP сервер для автоматизации развертывания приложений в Timeweb Cloud",
+  "scripts": {
+    "build": "tsdown && chmod 755 dist/index.js",
+    "start": "node -r dotenv/config dist/index.js",
+    "inspect": "export DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector npm run start",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "mcp",
+    "timeweb",
+    "deploy",
+    "timeweb apps"
+  ],
+  "author": "Timeweb",
+  "license": "UNLICENSED",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "bin": {
+    "timeweb-mcp-server": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timeweb-cloud/mcp-server.git"
+  },
+  "homepage": "https://github.com/timeweb-cloud/mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/timeweb-cloud/mcp-server/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "axios": "^1.11.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsdown": "^0.13.3",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

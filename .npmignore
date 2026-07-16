@@ -1,0 +1,23 @@
+# Исходные файлы TypeScript
+src/
+
+# Конфигурационные файлы
+tsconfig.json
+tsdown.config.ts
+
+# IDE и редактор
+.vscode/
+.idea/
+
+# Операционная система
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Dependency directories
+node_modules/
+
+package-lock.json
