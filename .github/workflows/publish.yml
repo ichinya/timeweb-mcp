@@ -60,5 +60,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Verify package
+        run: npm run verify
+
       - name: Publish package
-        run: npm publish
+        run: npm publish --ignore-scripts

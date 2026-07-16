@@ -196,6 +196,8 @@ npm run inspect
 | --- | --- | --- |
 | `npm run type-check` | Проверка TypeScript без генерации файлов | Windows, macOS, Linux |
 | `npm run build` | Сборка проекта | Windows, macOS, Linux |
+| `npm run smoke` | Проверка запуска собранного MCP-сервера и чистоты `stdout` | Windows, macOS, Linux |
+| `npm run verify` | Полная проверка OpenAPI, TypeScript, сборки и запуска | Windows, macOS, Linux |
 | `npm run start` | Запуск `dist/index.js` с загрузкой `.env` | Windows, macOS, Linux |
 | `npm run inspect` | Запуск MCP Inspector | Windows, macOS, Linux |
 | `npm run clean` | Удаление `dist` | Windows, macOS, Linux |
@@ -215,7 +217,7 @@ npm run inspect
    Вместо `patch` можно использовать `minor`, `major` или указать точную версию.
 
 2. Закоммитьте и отправьте изменения в `main`.
-3. Создайте GitHub Release с тегом, точно соответствующим версии с префиксом `v`. Например, для версии `0.1.6` нужен тег `v0.1.6`.
+3. Создайте GitHub Release с тегом, точно соответствующим версии с префиксом `v`. Например, для версии `1.2.3` нужен тег `v1.2.3`.
 4. Workflow [`.github/workflows/publish.yml`](.github/workflows/publish.yml) проверит тег, OpenAPI и TypeScript, соберёт пакет и опубликует его в npm.
 
 Trusted Publisher в настройках npm должен быть связан со следующими значениями:

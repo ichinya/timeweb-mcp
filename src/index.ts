@@ -42,9 +42,13 @@ const startServer = async () => {
   });
 
   Object.values(resources).forEach((resource: any) => {
+    const uriOrTemplate = resource.uri.includes("{")
+      ? resource.template
+      : resource.uri;
+
     server.registerResource(
       resource.name,
-      resource.uri,
+      uriOrTemplate,
       {
         title: resource.title,
         description: resource.description,

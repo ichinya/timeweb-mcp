@@ -1,15 +1,17 @@
 {
   "name": "timeweb-mcp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "MCP-сервер для управления инфраструктурой Timeweb Cloud",
   "scripts": {
     "build": "tsdown",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run validate:openapi && npm run type-check",
+    "prepublishOnly": "npm run verify",
     "start": "node -r dotenv/config dist/index.js",
     "inspect": "npx @modelcontextprotocol/inspector npm run start",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "type-check": "tsc --noEmit",
+    "smoke": "node scripts/smoke-start.mjs && node scripts/smoke-mcp.mjs",
+    "verify": "npm run validate:openapi && npm run type-check && npm run build && npm run smoke",
     "normalize:openapi": "node scripts/normalize-openapi.mjs",
     "validate:openapi": "node scripts/validate-openapi.mjs"
   },
@@ -44,8 +46,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.4",
-    "axios": "^1.11.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios": "^1.18.1",
     "dotenv": "^16.4.5",
     "zod": "^3.25.76"
   },
