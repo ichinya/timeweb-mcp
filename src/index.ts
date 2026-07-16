@@ -9,7 +9,7 @@ import { getVersion } from "./utils";
 const startServer = async () => {
   const server = new McpServer(
     {
-      name: "timeweb-mcp-server",
+      name: "timeweb-mcp",
       title: "Timeweb MCP Server",
       version: getVersion(),
     },
@@ -63,7 +63,7 @@ const startServer = async () => {
 
 startServer()
   .then(() => {
-    console.log("Timeweb MCP server started");
+    console.error("Timeweb MCP server started");
   })
   .catch((error) => {
     console.error("Failed to start Timeweb MCP server:", error);

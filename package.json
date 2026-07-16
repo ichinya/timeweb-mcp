@@ -1,38 +1,47 @@
 {
-  "name": "timeweb-mcp-server",
-  "version": "0.1.5",
-  "description": "MCP сервер для автоматизации развертывания приложений в Timeweb Cloud",
+  "name": "timeweb-mcp",
+  "version": "0.1.6",
+  "description": "MCP-сервер для управления инфраструктурой Timeweb Cloud",
   "scripts": {
-    "build": "tsdown && chmod 755 dist/index.js",
+    "build": "tsdown",
     "prepare": "npm run build",
+    "prepublishOnly": "npm run validate:openapi && npm run type-check",
     "start": "node -r dotenv/config dist/index.js",
-    "inspect": "export DANGEROUSLY_OMIT_AUTH=true && npx @modelcontextprotocol/inspector npm run start",
-    "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "inspect": "npx @modelcontextprotocol/inspector npm run start",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "type-check": "tsc --noEmit",
+    "normalize:openapi": "node scripts/normalize-openapi.mjs",
+    "validate:openapi": "node scripts/validate-openapi.mjs"
   },
   "keywords": [
     "mcp",
     "timeweb",
-    "deploy",
-    "timeweb apps"
+    "timeweb-cloud",
+    "cloud",
+    "infrastructure",
+    "model-context-protocol"
   ],
-  "author": "Timeweb",
+  "author": "ichinya",
   "license": "UNLICENSED",
   "files": [
     "dist"
   ],
   "type": "module",
   "bin": {
-    "timeweb-mcp-server": "./dist/index.js"
+    "timeweb-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/timeweb-cloud/mcp-server.git"
+    "url": "git+https://github.com/ichinya/timeweb-mcp.git"
   },
-  "homepage": "https://github.com/timeweb-cloud/mcp-server#readme",
+  "homepage": "https://github.com/ichinya/timeweb-mcp#readme",
   "bugs": {
-    "url": "https://github.com/timeweb-cloud/mcp-server/issues"
+    "url": "https://github.com/ichinya/timeweb-mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",
