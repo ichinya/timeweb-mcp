@@ -12,10 +12,10 @@ MCP-сервер для управления инфраструктурой Time
 Текущая сборка регистрирует:
 
 | Возможность MCP | Количество |
-| --- | ---: |
-| Инструменты | 245 |
-| Ресурсы | 6 |
-| Промпты | 2 |
+| --------------- | ---------: |
+| Инструменты     |        245 |
+| Ресурсы         |          6 |
+| Промпты         |          2 |
 
 Инструменты охватывают основные операции со следующими сервисами:
 
@@ -192,17 +192,18 @@ npm run inspect
 
 ## Команды разработки
 
-| Команда | Назначение | Совместимость |
-| --- | --- | --- |
-| `npm run type-check` | Проверка TypeScript без генерации файлов | Windows, macOS, Linux |
-| `npm run build` | Сборка проекта | Windows, macOS, Linux |
-| `npm run smoke` | Проверка запуска собранного MCP-сервера и чистоты `stdout` | Windows, macOS, Linux |
-| `npm run verify` | Полная проверка OpenAPI, TypeScript, сборки и запуска | Windows, macOS, Linux |
-| `npm run start` | Запуск `dist/index.js` с загрузкой `.env` | Windows, macOS, Linux |
-| `npm run inspect` | Запуск MCP Inspector | Windows, macOS, Linux |
-| `npm run clean` | Удаление `dist` | Windows, macOS, Linux |
-| `npm run normalize:openapi` | Нормализация конфликтующих имён схем | Windows, macOS, Linux |
-| `npm run validate:openapi` | Проверка локальной OpenAPI-спецификации | Windows, macOS, Linux |
+| Команда                     | Назначение                                                             | Совместимость         |
+| --------------------------- | ---------------------------------------------------------------------- | --------------------- |
+| `npm run type-check`        | Проверка TypeScript без генерации файлов                               | Windows, macOS, Linux |
+| `npm run build`             | Сборка проекта                                                         | Windows, macOS, Linux |
+| `npm run test:release`      | Проверка логики определения новой версии и релизного тега              | Windows, macOS, Linux |
+| `npm run smoke`             | Проверка запуска собранного MCP-сервера и чистоты `stdout`             | Windows, macOS, Linux |
+| `npm run verify`            | Полная проверка OpenAPI, релизной логики, TypeScript, сборки и запуска | Windows, macOS, Linux |
+| `npm run start`             | Запуск `dist/index.js` с загрузкой `.env`                              | Windows, macOS, Linux |
+| `npm run inspect`           | Запуск MCP Inspector                                                   | Windows, macOS, Linux |
+| `npm run clean`             | Удаление `dist`                                                        | Windows, macOS, Linux |
+| `npm run normalize:openapi` | Нормализация конфликтующих имён схем                                   | Windows, macOS, Linux |
+| `npm run validate:openapi`  | Проверка локальной OpenAPI-спецификации                                | Windows, macOS, Linux |
 
 ## Выпуск новой версии
 
@@ -217,8 +218,10 @@ npm run inspect
    Вместо `patch` можно использовать `minor`, `major` или указать точную версию.
 
 2. Закоммитьте и отправьте изменения в `main`.
-3. Создайте GitHub Release с тегом, точно соответствующим версии с префиксом `v`. Например, для версии `1.2.3` нужен тег `v1.2.3`.
-4. Workflow [`.github/workflows/publish.yml`](.github/workflows/publish.yml) проверит тег, OpenAPI и TypeScript, соберёт пакет и опубликует его в npm.
+3. Workflow [`.github/workflows/publish.yml`](.github/workflows/publish.yml) сравнит новую версию с версией предыдущего коммита.
+4. Если версия увеличилась, workflow проверит проект, создаст тег `vX.Y.Z`, опубликует пакет с той же версией в npm и создаст GitHub Release.
+
+Создавать тег или GitHub Release вручную не нужно. Изменение других полей `package.json` без повышения версии не запускает выпуск. Понижение версии считается ошибкой.
 
 Trusted Publisher в настройках npm должен быть связан со следующими значениями:
 
@@ -273,15 +276,15 @@ npm run validate:openapi
 
 Нормализация переименовывает только конфликтующие ключи в `components.schemas` и соответствующие внутренние `$ref`:
 
-| Официальное имя | Локальное имя |
-| --- | --- |
-| `meta` | `CollectionMeta` |
-| `Meta` | `RequiredCollectionMeta` |
-| `location` | `ServiceLocation` |
-| `Location` | `ImageLocation` |
-| `autoreply-is-enabled` | `MailV2AutoReplyEnabled` |
-| `autoreply-is-disabled` | `MailV2AutoReplyDisabled` |
-| `auto-reply-is-enabled` | `MailV1AutoReplyEnabled` |
+| Официальное имя          | Локальное имя             |
+| ------------------------ | ------------------------- |
+| `meta`                   | `CollectionMeta`          |
+| `Meta`                   | `RequiredCollectionMeta`  |
+| `location`               | `ServiceLocation`         |
+| `Location`               | `ImageLocation`           |
+| `autoreply-is-enabled`   | `MailV2AutoReplyEnabled`  |
+| `autoreply-is-disabled`  | `MailV2AutoReplyDisabled` |
+| `auto-reply-is-enabled`  | `MailV1AutoReplyEnabled`  |
 | `auto-reply-is-disabled` | `MailV1AutoReplyDisabled` |
 
 Это устраняет коллизии имён файлов и TypeScript-моделей на файловых системах без учёта регистра. Названия полей запросов и ответов, пути API и wire-формат данных не изменяются.
