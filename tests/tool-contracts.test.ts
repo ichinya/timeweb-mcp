@@ -12,6 +12,7 @@ import { AppsApiClient } from "../src/api/apps";
 import { ServerException } from "../src/exceptions/server.exception";
 import { createSshKeyHandler, createSshKeyTool } from "../src/tools/create-ssh-key.tool";
 import { createAppHandler, createAppTool } from "../src/tools/create-app.tool";
+import { createDatabaseTool } from "../src/tools/create-database.tool";
 import { getVcsProviderByRepositoryUrlHandler } from "../src/tools/get-vcs-provider-by-repository-url.tool";
 import { createServerHandler, createServerTool } from "../src/tools/create-server.tool";
 import { checkDomainHandler, checkDomainTool } from "../src/tools/check-domain.tool";
@@ -109,6 +110,18 @@ const repositoryId = "22222222-2222-4222-8222-222222222222";
 const appParams: CreateAppParams = { type: AppTypes.BACKEND, provider_id: providerId, repository_id: repositoryId,
   repository_url: "https://github.com/org/demo.git", preset_id: 101, framework: FrameworksBackend.EXPRESS,
   commit_sha: "a".repeat(40), branch_name: "main", name: "offline", build_cmd: "npm run build", run_cmd: "npm start" };
+
+test("dependency upgrades preserve environment records, enum choices and IPv4 validation", () => {
+  assert.deepEqual(createAppTool.inputSchema.envs.parse({ MODE: "offline" }), { MODE: "offline" });
+  assert.deepEqual(createAppTool.inputSchema.envs.parse(undefined), {});
+  assert.equal(createAppTool.inputSchema.envs.safeParse({ MODE: 42 }).success, false);
+  assert.equal(createAppTool.inputSchema.type.safeParse("backend").success, true);
+  assert.equal(createAppTool.inputSchema.type.safeParse("invalid").success, false);
+  assert.equal(createDatabaseTool.inputSchema.floating_ip.safeParse("192.0.2.1").success, true);
+  assert.equal(createDatabaseTool.inputSchema.floating_ip.safeParse("2001:db8::1").success, false);
+  assert.equal(createDatabaseTool.inputSchema.floating_ip.safeParse("invalid").success, false);
+});
+
 type Fixture = { providers?: unknown; repositories?: Record<string, unknown>; presets?: unknown };
 function appFixture(fixture: Fixture = {}) {
   const journal: { method: string; url: string; data?: Record<string, unknown> }[] = [];

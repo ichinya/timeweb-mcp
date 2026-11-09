@@ -23,51 +23,35 @@ const frameworks = [
 
 const inputSchema = {
   type: z
-    .nativeEnum(AppTypes, {
-      description: `Тип приложения (frontend/backend). АВТОМАТИЧЕСКИ определить по структуре проекта`,
-    })
+    .nativeEnum(AppTypes).describe(`Тип приложения (frontend/backend). АВТОМАТИЧЕСКИ определить по структуре проекта`)
     .describe(
       "ОБЯЗАТЕЛЬНОЕ ПОЛЕ - тип приложения должен быть определен (frontend или backend)"
     ),
 
   provider_id: z
-    .string({
-      description: `ID выбранного подключенного VCS провайдера. Получить через ${ToolNames.GET_VCS_PROVIDERS} или ${ToolNames.GET_VCS_PROVIDER_BY_REPOSITORY_URL}. ID сохраняется без автоматической замены.`,
-    })
+    .string().describe(`ID выбранного подключенного VCS провайдера. Получить через ${ToolNames.GET_VCS_PROVIDERS} или ${ToolNames.GET_VCS_PROVIDER_BY_REPOSITORY_URL}. ID сохраняется без автоматической замены.`)
     .uuid("ID провайдера должен быть валидным UUID")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID VCS провайдера"),
 
   repository_id: z
-    .string({
-      description: `ID репозитория выбранного провайдера. Получить через ${ToolNames.GET_VCS_PROVIDER_REPOSITORIES} и проверить полный URL. Не создавать новый репозиторий автоматически.`,
-    })
+    .string().describe(`ID репозитория выбранного провайдера. Получить через ${ToolNames.GET_VCS_PROVIDER_REPOSITORIES} и проверить полный URL. Не создавать новый репозиторий автоматически.`)
     .uuid("ID репозитория должен быть валидным UUID")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID репозитория"),
 
   repository_url: z
-    .string({
-      description:
-        "URL подключенного репозитория. АВТОМАТИЧЕСКИ достать из папки .git/refs/remotes/origin/, не запуская команды в терминале. URL должен быть в формате https://github.com/user/repo",
-    })
+    .string().describe("URL подключенного репозитория. АВТОМАТИЧЕСКИ достать из папки .git/refs/remotes/origin/, не запуская команды в терминале. URL должен быть в формате https://github.com/user/repo")
     .refine(value => normalizeRepositoryUrl(value) !== undefined, "Некорректный URL Git-репозитория")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - URL репозитория"),
 
   preset_id: z
-    .number({
-      description: `ID пресета приложения в timeweb cloud. АВТОМАТИЧЕСКИ запросить с помощью ресурса ${ResourceNames.ALLOWED_PRESETS} доступные пресеты, и выбрать первый подходящий для определенного типа приложения и фреймворка`,
-    })
+    .number().describe(`ID пресета приложения в timeweb cloud. АВТОМАТИЧЕСКИ запросить с помощью ресурса ${ResourceNames.ALLOWED_PRESETS} доступные пресеты, и выбрать первый подходящий для определенного типа приложения и фреймворка`)
     .int("ID пресета должен быть целым числом")
     .positive("ID пресета должен быть положительным числом")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID пресета"),
 
   framework: z
     .union(
-      [z.nativeEnum(FrameworksFrontend), z.nativeEnum(FrameworksBackend)],
-      {
-        description:
-          "Фреймворк приложения. АВТОМАТИЧЕСКИ определить по структуре проекта, анализируя package.json, конфигурационные файлы и структуру директорий. Если в структуре проекта есть файлы Dockerfile или docker-compose, то это backend приложение с типом docker или docker-compose. Если определить не получается, запросить у пользователя",
-      }
-    )
+      [z.nativeEnum(FrameworksFrontend), z.nativeEnum(FrameworksBackend)]).describe("Фреймворк приложения. АВТОМАТИЧЕСКИ определить по структуре проекта, анализируя package.json, конфигурационные файлы и структуру директорий. Если в структуре проекта есть файлы Dockerfile или docker-compose, то это backend приложение с типом docker или docker-compose. Если определить не получается, запросить у пользователя")
     .describe(
       "ОБЯЗАТЕЛЬНОЕ ПОЛЕ - фреймворк приложения (React, Vue, Angular, Next.js, Django, Express, Laravel, Docker и др.). Если в структуре проекта есть файлы Dockerfile или docker-compose, то это backend приложение с типом docker или docker-compose."
     )
@@ -77,10 +61,7 @@ const inputSchema = {
     }),
 
   commit_sha: z
-    .string({
-      description:
-        "SHA коммита активной удаленной ветки. АВТОМАТИЧЕСКИ достать из .git/refs/remotes/origin/HEAD или соответствующей ветки, НЕ запуская команды в терминале. Должен быть полный SHA (40 символов)",
-    })
+    .string().describe("SHA коммита активной удаленной ветки. АВТОМАТИЧЕСКИ достать из .git/refs/remotes/origin/HEAD или соответствующей ветки, НЕ запуская команды в терминале. Должен быть полный SHA (40 символов)")
     .min(40, "SHA должен быть полный, не сокращенный")
     .max(40, "SHA должен быть ровно 40 символов")
     .regex(
@@ -93,19 +74,14 @@ const inputSchema = {
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - SHA коммита (40 символов)"),
 
   branch_name: z
-    .string({
-      description:
-        "Активная ветка. АВТОМАТИЧЕСКИ достать из .git/HEAD, не запуская команды в терминале.",
-    })
+    .string().describe("Активная ветка. АВТОМАТИЧЕСКИ достать из .git/HEAD, не запуская команды в терминале.")
     .refine((branch) => branch.trim().length > 0, {
       message: "Некорректное название ветки",
     })
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - название ветки"),
 
   name: z
-    .string({
-      description: "Название приложения (2-3 слова).",
-    })
+    .string().describe("Название приложения (2-3 слова).")
     .min(3, "Название должно содержать минимум 3 символа")
     .max(80, "Название слишком длинное (максимум 80 символов)")
     .regex(
@@ -115,25 +91,18 @@ const inputSchema = {
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - название приложения"),
 
   build_cmd: z
-    .string({
-      description: `Команда для сборки. АВТОМАТИЧЕСКИ определить в зависимости от фреймворка и структуры проекта. МОЖНО использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка. ОБЯЗАТЕЛЬНО для всех приложений`,
-    })
+    .string().describe(`Команда для сборки. АВТОМАТИЧЕСКИ определить в зависимости от фреймворка и структуры проекта. МОЖНО использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка. ОБЯЗАТЕЛЬНО для всех приложений`)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - команда сборки"),
 
   envs: z
-    .record(z.string(), {
-      description:
-        "Это критически важная информация, которая влияет на работу приложения. Пользователь должен предоставить все переменные окружения.",
-    })
+    .record(z.string(), z.string()).describe("Это критически важная информация, которая влияет на работу приложения. Пользователь должен предоставить все переменные окружения.")
     .describe(
       "ОБЯЗАТЕЛЬНОЕ ПОЛЕ - переменные окружения. Пользователь должен указать их самостоятельно"
     )
     .default({}),
 
   comment: z
-    .string({
-      description: "Комментарий к приложению",
-    })
+    .string().describe("Комментарий к приложению")
     .max(200, "Комментарий слишком длинный")
     .refine((comment) => comment.trim().length > 0, {
       message: "Комментарий не может состоять только из пробелов",
@@ -142,30 +111,21 @@ const inputSchema = {
     .describe("НЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ - комментарий"),
 
   index_dir: z
-    .string({
-      description: `Директория с index файлом (ТОЛЬКО для frontend приложений). Использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка.`,
-    })
+    .string().describe(`Директория с index файлом (ТОЛЬКО для frontend приложений). Использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка.`)
     .describe("ТОЛЬКО для frontend приложений - директория с index файлом")
     .optional(),
 
   run_cmd: z
-    .string({
-      description: `Команда для запуска. Использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка. ОБЯЗАТЕЛЬНО для backend приложений`,
-    })
+    .string().describe(`Команда для запуска. Использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка. ОБЯЗАТЕЛЬНО для backend приложений`)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ для backend приложений - команда запуска"),
 
   system_dependencies: z
-    .array(z.string(), {
-      description:
-        "Системные зависимости. АВТОМАТИЧЕСКИ определить по фреймворку и структуре проекта, если нужно.",
-    })
+    .array(z.string()).describe("Системные зависимости. АВТОМАТИЧЕСКИ определить по фреймворку и структуре проекта, если нужно.")
     .describe("НЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ - системные зависимости (если нужно)")
     .default([]),
 
   is_auto_deploy: z
-    .literal(false, {
-      description: "ВСЕГДА false при создании через MCP сервер",
-    })
+    .literal(false).describe("ВСЕГДА false при создании через MCP сервер")
     .default(false)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - всегда false"),
 };

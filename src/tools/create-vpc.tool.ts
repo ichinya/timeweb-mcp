@@ -10,15 +10,11 @@ const inputSchema = {
     .nativeEnum(AvailabilityZones)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - зона доступности"),
   name: z
-    .string({
-      description: "Название виртуальной приватной сети",
-    })
+    .string().describe("Название виртуальной приватной сети")
     .describe("Название VPC")
     .default(""),
   subnet_v4: z
-    .string({
-      description: "IPv4 подсеть в формате CIDR (например: 192.168.0.0/24)",
-    })
+    .string().describe("IPv4 подсеть в формате CIDR (например: 192.168.0.0/24)")
     .regex(
       /^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/,
       "Подсеть должна быть в формате CIDR (например: 192.168.0.0/24)"

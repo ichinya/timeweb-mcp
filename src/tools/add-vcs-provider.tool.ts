@@ -8,23 +8,18 @@ import { VcsProviders } from "../types/vcs-providers.enum";
 
 const inputSchema = {
   url: z
-    .string({
-      description: `URL репозитория в формате HTTPS. Пример https://github.com/username/repo.git. АВТОМАТИЧЕСКИ определить из .git/config если не указано явно`,
-    })
+    .string().describe(`URL репозитория в формате HTTPS. Пример https://github.com/username/repo.git. АВТОМАТИЧЕСКИ определить из .git/config если не указано явно`)
     .url("URL должен быть валидным"),
   login: z
-    .string({
-      description: `ЛОГИН ДЛЯ ДОСТУПА К РЕПОЗИТОРИЮ.
+    .string().describe(`ЛОГИН ДЛЯ ДОСТУПА К РЕПОЗИТОРИЮ.
         🔒 ОБЯЗАТЕЛЬНО для приватных репозиториев!
 
         Если при добавлении провайдера возникнет ошибка авторизации:
         • Запросить логин и пароль/токен у пользователя
-        • Если ошибка авторизации - ПЕРЕЗАПРОСИТЬ с новыми данными`,
-    })
+        • Если ошибка авторизации - ПЕРЕЗАПРОСИТЬ с новыми данными`)
     .optional(),
   password: z
-    .string({
-      description: `ПАРОЛЬ ИЛИ ТОКЕН ДЛЯ ДОСТУПА К РЕПОЗИТОРИЮ.
+    .string().describe(`ПАРОЛЬ ИЛИ ТОКЕН ДЛЯ ДОСТУПА К РЕПОЗИТОРИЮ.
         🔒 ОБЯЗАТЕЛЬНО для приватных репозиториев!
 
         Варианты:
@@ -33,12 +28,9 @@ const inputSchema = {
 
         Если при добавлении провайдера возникнет ошибка авторизации:
         • Запросить токен/пароль у пользователя
-        • Если ошибка авторизации - ПЕРЕЗАПРОСИТЬ с новыми данными`,
-    })
+        • Если ошибка авторизации - ПЕРЕЗАПРОСИТЬ с новыми данными`)
     .optional(),
-  provider_type: z.nativeEnum(VcsProviders, {
-    description: "Тип VCS провайдера",
-  }),
+  provider_type: z.nativeEnum(VcsProviders).describe("Тип VCS провайдера"),
 };
 
 const handler = async (params: AddVcsProviderRequestDto) => {

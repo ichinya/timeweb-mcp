@@ -6,9 +6,7 @@ import { getVcsProviderRepositoriesAction } from "../actions/get-vcs-provider-re
 import { GetVcsProviderRepositoriesRequestDto } from "../types/dto/get-vcs-provider-repositories-request.dto";
 
 const inputSchema = {
-  provider_id: z.string({
-    description: "ID провайдера для получения списка репозиториев",
-  }),
+  provider_id: z.string().describe("ID провайдера для получения списка репозиториев"),
 };
 
 const handler = async (params: GetVcsProviderRepositoriesRequestDto) => {

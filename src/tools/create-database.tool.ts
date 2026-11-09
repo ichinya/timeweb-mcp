@@ -10,18 +10,14 @@ import { ResourceNames } from "../types/resource-names.enum";
 
 const inputSchema = {
   name: z
-    .string({
-      description: "Название базы данных",
-    })
+    .string().describe("Название базы данных")
     .min(3, "Название не может быть пустым")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - название базы данных"),
   type: z
     .nativeEnum(DatabaseTypes)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - тип базы данных"),
   preset_id: z
-    .number({
-      description: "ID пресета конфигурации базы данных",
-    })
+    .number().describe("ID пресета конфигурации базы данных")
     .int("ID пресета должен быть целым числом")
     .positive("ID пресета должен быть положительным числом")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID пресета"),
@@ -29,38 +25,26 @@ const inputSchema = {
     .nativeEnum(AvailabilityZones)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - зона доступности"),
   admin_password: z
-    .string({
-      description: "Пароль администратора базы данных",
-    })
+    .string().describe("Пароль администратора базы данных")
     .min(8, "Пароль должен содержать минимум 8 символов")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - пароль администратора"),
   floating_ip: z
-    .string({
-      description: "Floating IP адрес для подключения к базе данных",
-    })
-    .ip({
-      version: "v4",
-      message: "Floating IP должен быть валидным IPv4 адресом",
+    .ipv4({
+      error: "Floating IP должен быть валидным IPv4 адресом",
     })
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - floating IP адрес"),
   vpc_id: z
-    .string({
-      description: `ID виртуальной приватной сети (VPC). Получить список VPC можно в ресурсах ${ResourceNames.GET_VPCS}`,
-    })
+    .string().describe(`ID виртуальной приватной сети (VPC). Получить список VPC можно в ресурсах ${ResourceNames.GET_VPCS}`)
     .min(1, "ID VPC не может быть пустым")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID VPC"),
   hash_type: z
-    .string({
-      description: "Тип хеширования паролей",
-    })
+    .string().describe("Тип хеширования паролей")
     .default("caching_sha2")
     .describe(
       "НЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ - тип хеширования (по умолчанию: caching_sha2)"
     ),
   auto_backups: z
-    .boolean({
-      description: "Включить ли автоматические резервные копии",
-    })
+    .boolean().describe("Включить ли автоматические резервные копии")
     .default(true)
     .describe(
       "НЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ - автоматические резервные копии (по умолчанию: true)"

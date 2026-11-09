@@ -48,15 +48,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "axios": "^1.18.1",
-    "dotenv": "^16.4.5",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "axios": "^1.21.0",
+    "dotenv": "^18.0.10",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^24.3.0",
-    "tsdown": "^0.13.3",
-    "typescript": "^5.9.2"
+    "@types/node": "^26.6.6",
+    "tsdown": "^0.23.7",
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=20.0.0"

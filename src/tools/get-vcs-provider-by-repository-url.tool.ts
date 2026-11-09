@@ -7,9 +7,7 @@ import { appsApiClient } from "../api/apps";
 import { normalizeRepositoryUrl, parseVcsProviders, parseVcsRepositories } from "../vcs-repository";
 
 const inputSchema = {
-  repository_url: z.string({
-    description: "URL репозитория для поиска VCS провайдера",
-  }),
+  repository_url: z.string().describe("URL репозитория для поиска VCS провайдера"),
 };
 
 export const getVcsProviderByRepositoryUrlHandler = (

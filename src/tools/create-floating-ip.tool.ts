@@ -9,9 +9,7 @@ const inputSchema = {
   availability_zone: z.nativeEnum(AvailabilityZones)
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - зона доступности"),
   is_ddos_guard: z
-    .boolean({
-      description: "Включить ли DDoS защиту для floating IP",
-    })
+    .boolean().describe("Включить ли DDoS защиту для floating IP")
     .default(false)
     .describe("НЕ ОБЯЗАТЕЛЬНОЕ ПОЛЕ - DDoS защита (по умолчанию: false)"),
 };

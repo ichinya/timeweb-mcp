@@ -2,20 +2,21 @@ import { mkdir, mkdtemp, realpath, lstat, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
 import { build } from 'tsdown';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const entry = path.join(root, 'tests/transport.test.ts');
-const config = ts.readConfigFile(path.join(root, 'tsconfig.json'), ts.sys.readFile);
-if (config.error) throw new Error(ts.flattenDiagnosticMessageText(config.error.messageText, '\n'));
-const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, root);
-const options = { ...parsed.options, rootDir: root, noEmit: true, declaration: false, declarationMap: false, moduleResolution: ts.ModuleResolutionKind.Bundler };
-const program = ts.createProgram([entry], options);
-const diagnostics = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
-if (diagnostics.length) {
-  console.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, { getCurrentDirectory: () => root, getCanonicalFileName: f => f, getNewLine: () => '\n' }));
-  process.exitCode = 1;
+// TypeScript 7 no longer exports the classic compiler API. Use its supported CLI
+// for the tests as well as production, keeping type failures before the test run.
+const typesExit = await new Promise((resolve, reject) => {
+  const child = spawn(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.tests.json'], {
+    cwd: root, stdio: 'inherit', windowsHide: true,
+  });
+  child.once('error', reject);
+  child.once('exit', (code, signal) => resolve(signal ? 1 : code ?? 1));
+});
+if (typesExit !== 0) {
+  process.exitCode = Number(typesExit);
 } else {
   const cache = path.join(root, 'node_modules/.cache');
   await mkdir(cache, { recursive: true });
@@ -27,7 +28,8 @@ if (diagnostics.length) {
   try {
     await build({ config: false, tsconfig: false, entry: [entry.replaceAll('\\', '/')], outDir: temp, clean: true,
       format: ['esm'], platform: 'node', target: 'node20.0.0', dts: false, sourcemap: false,
-      external: id => id.startsWith('node:') || id === 'axios' || id === 'zod' || id.startsWith('@modelcontextprotocol/') });
+      outExtensions: () => ({ js: '.js' }),
+      deps: { neverBundle: id => id.startsWith('node:') || id === 'axios' || id === 'zod' || id.startsWith('@modelcontextprotocol/') } });
     const exit = await new Promise((resolve, reject) => {
       const child = spawn(process.execPath, ['--test', path.join(temp, 'transport.test.js')], {
         cwd: root, stdio: 'inherit', windowsHide: true,
