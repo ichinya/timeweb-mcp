@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listProjectBalancersAction } from "../actions/list-project-balancers.action";
 
@@ -24,7 +24,7 @@ const handler = async (params: { project_id: number }) => {
       `Балансировщики проекта ${params.project_id} (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

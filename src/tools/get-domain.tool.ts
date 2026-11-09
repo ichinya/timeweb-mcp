@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDomainAction } from "../actions/get-domain.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: { fqdn: string }) => {
 • Провайдер: ${d.provider ?? "—"}
 • Поддоменов: ${d.subdomains?.length ?? 0}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

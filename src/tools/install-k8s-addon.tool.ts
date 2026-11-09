@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { installK8sAddonAction } from "../actions/install-k8s-addon.action";
 
@@ -40,7 +40,7 @@ const handler = async (params: {
       `✅ Дополнение ${params.type} v${params.version} установлено в кластер ${params.cluster_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

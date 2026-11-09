@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDatabaseAdminsAction } from "../actions/list-database-admins.action";
 
@@ -31,7 +31,7 @@ const handler = async (params: { db_cluster_id: number }) => {
       `Пользователи кластера ${params.db_cluster_id} (${admins.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

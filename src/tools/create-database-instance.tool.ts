@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createDatabaseInstanceAction } from "../actions/create-database-instance.action";
 
@@ -29,7 +29,7 @@ const handler = async (params: {
     const { db_cluster_id, ...data } = params;
     const i = await createDatabaseInstanceAction(db_cluster_id, data);
     if (!i) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `⚠️ Запрос на создание инстанса "${params.name}" отправлен, но API не вернул объект.`
       );
     }
@@ -37,7 +37,7 @@ const handler = async (params: {
       `✅ Инстанс ${i.name} (ID ${i.id}) создан в кластере ${db_cluster_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

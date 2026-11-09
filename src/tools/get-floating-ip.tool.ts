@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getFloatingIpAction } from "../actions/get-floating-ip.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: { floating_ip_id: string }) => {
 • Комментарий: ${ip.comment ?? "—"}
 • PTR: ${ip.ptr ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

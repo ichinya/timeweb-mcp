@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { cloneServerAction } from "../actions/clone-server.action";
 
@@ -20,7 +20,7 @@ const handler = async (params: { server_id: number }) => {
         `Создание идёт асинхронно — повторно проверь статус через get_server.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

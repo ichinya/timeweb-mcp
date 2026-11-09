@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDnsRecordsAction } from "../actions/list-dns-records.action";
 
@@ -28,7 +28,7 @@ const handler = async (params: { fqdn: string }) => {
       `DNS-записи домена ${params.fqdn} (${records.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

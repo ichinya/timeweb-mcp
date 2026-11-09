@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listK8sNetworkDriversAction } from "../actions/list-k8s-network-drivers.action";
 
@@ -15,7 +15,7 @@ const handler = async () => {
       `Сетевые драйверы Kubernetes (${drivers.length}):\n${drivers.map((d) => `• ${d}`).join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

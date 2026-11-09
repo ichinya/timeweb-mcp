@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import * as tools from "./tools";
+import { registerProjectTools } from "./register-tools";
 import * as resources from "./resources";
 import * as prompts from "./prompts";
 import { getVersion } from "./utils";
@@ -24,24 +24,7 @@ const startServer = async () => {
     }
   );
 
-  Object.values(tools).forEach((tool: any) => {
-    server.registerTool(
-      tool.name,
-      {
-        title: tool.title,
-        description: tool.description,
-        inputSchema: tool.inputSchema,
-        annotations: {
-          title: tool.title,
-          readOnlyHint: false,
-          destructiveHint: false,
-          idempotentHint: false,
-          openWorldHint: true,
-        },
-      },
-      wrapRequestHandler(tool.name, (...args: unknown[]) => tool.handler(...args))
-    );
-  });
+  registerProjectTools(server);
 
   Object.values(resources).forEach((resource: any) => {
     const uriOrTemplate = resource.uri.includes("{")

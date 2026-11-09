@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getFirewallGroupAction } from "../actions/get-firewall-group.action";
 
@@ -24,7 +24,7 @@ const handler = async (params: { group_id: string }) => {
 • Создана: ${new Date(g.created_at).toLocaleString("ru-RU")}
 • Обновлена: ${new Date(g.updated_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

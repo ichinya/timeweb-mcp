@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { checkDomainAction } from "../actions/check-domain.action";
 
@@ -10,9 +10,9 @@ const inputSchema = {
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - полное имя домена для проверки доступности"),
 };
 
-const handler = async (params: { fqdn: string }) => {
+export const checkDomainHandler = (check = checkDomainAction) => async (params: { fqdn: string }) => {
   try {
-    const available = await checkDomainAction(params.fqdn);
+    const available = await check(params.fqdn);
     if (available) {
       return createToolResponse(
         `✅ Домен ${params.fqdn} свободен и доступен для регистрации.`
@@ -22,7 +22,7 @@ const handler = async (params: { fqdn: string }) => {
       `⚠️ Домен ${params.fqdn} уже занят — зарегистрировать нельзя.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
@@ -32,5 +32,5 @@ export const checkDomainTool = {
   description:
     "Проверяет, свободен ли домен и можно ли его зарегистрировать. Возвращает булево значение.",
   inputSchema,
-  handler,
+  handler: checkDomainHandler(),
 };

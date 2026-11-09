@@ -1,3 +1,4 @@
+import { parseSshKeyResponse } from "./ssh-key-response";
 import { BaseApiClient } from "./client";
 import { SshKey } from "../types/ssh-key.type";
 import { ListSshKeysResponseDto } from "../types/dto/list-ssh-keys-response.dto";
@@ -16,7 +17,7 @@ export class SshKeysApiClient extends BaseApiClient {
     const response = await this.get<ListSshKeysResponseDto>(
       "/api/v1/ssh-keys"
     );
-    return response.ssh_keys;
+    return parseSshKeyResponse(response, true);
   }
 
   /**
@@ -27,7 +28,7 @@ export class SshKeysApiClient extends BaseApiClient {
       "/api/v1/ssh-keys",
       data
     );
-    return response.ssh_key;
+    return parseSshKeyResponse(response, false, true);
   }
 
   /**
@@ -37,7 +38,7 @@ export class SshKeysApiClient extends BaseApiClient {
     const response = await this.get<GetSshKeyResponseDto>(
       `/api/v1/ssh-keys/${sshKeyId}`
     );
-    return response.ssh_key;
+    return parseSshKeyResponse(response, false, false);
   }
 
   /**
@@ -51,7 +52,7 @@ export class SshKeysApiClient extends BaseApiClient {
       `/api/v1/ssh-keys/${sshKeyId}`,
       data
     );
-    return response.ssh_key;
+    return parseSshKeyResponse(response, false, true);
   }
 
   /**

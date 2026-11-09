@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerDisksAction } from "../actions/list-server-disks.action";
 
@@ -25,7 +25,7 @@ const handler = async (params: { server_id: number }) => {
       `Диски сервера ${params.server_id} (${disks.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

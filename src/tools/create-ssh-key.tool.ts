@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createSshKeyAction } from "../actions/create-ssh-key.action";
 
@@ -18,13 +18,13 @@ const inputSchema = {
     ),
 };
 
-const handler = async (params: {
+export const createSshKeyHandler = (create = createSshKeyAction) => async (params: {
   name: string;
   body: string;
   is_default: boolean;
 }) => {
   try {
-    const key = await createSshKeyAction(
+    const key = await create(
       params.name,
       params.body,
       params.is_default
@@ -40,7 +40,7 @@ const handler = async (params: {
 
 🎉 SSH-ключ готов к использованию!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
@@ -50,5 +50,5 @@ export const createSshKeyTool = {
   description:
     "Создаёт новый SSH-ключ в аккаунте. Требуются имя, тело публичного ключа и флаг is_default (будет ли ключ выбираться по умолчанию при создании сервера).",
   inputSchema,
-  handler,
+  handler: createSshKeyHandler(),
 };

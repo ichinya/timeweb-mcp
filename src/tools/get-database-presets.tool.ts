@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { getDatabasePresetsAction } from "../actions/get-database-presets.action";
 import { ToolNames } from "../types/tool-names.enum";
 
@@ -8,7 +8,7 @@ const handler = async () => {
     const presets = await getDatabasePresetsAction();
 
     if (!presets || !presets.length) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось получить список пресетов баз данных`
       );
     }
@@ -17,7 +17,7 @@ const handler = async () => {
 
     return createToolResponse(response);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

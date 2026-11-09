@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerOsAction } from "../actions/list-server-os.action";
 
@@ -29,7 +29,7 @@ const handler = async () => {
       `💿 Операционные системы (${oses.length}):\n\n${lines.join("\n")}\n\n💡 Используйте ID при создании VPS в поле os_id.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

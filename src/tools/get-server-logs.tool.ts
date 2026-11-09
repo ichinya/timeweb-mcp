@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getServerLogsAction } from "../actions/get-server-logs.action";
 
@@ -41,7 +41,7 @@ const handler = async (params: {
       `Логи сервера ${params.server_id} (${logs.length} событий):\n\n${lines.join("\n")}${suffix}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

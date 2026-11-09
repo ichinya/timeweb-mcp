@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDatabaseInstanceAction } from "../actions/get-database-instance.action";
 
@@ -33,7 +33,7 @@ const handler = async (params: {
 • Описание: ${i.description || "—"}
 • Создан: ${new Date(i.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

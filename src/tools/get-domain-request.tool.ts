@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDomainRequestAction } from "../actions/domain-requests.action";
 
@@ -23,7 +23,7 @@ const handler = async (params: { request_id: number }) => {
 • Сообщение: ${r.message ?? "—"}
 • Auth code: ${r.auth_code ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

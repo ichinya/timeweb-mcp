@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createK8sClusterAction } from "../actions/create-k8s-cluster.action";
 import {
@@ -113,7 +113,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.preset_id && params.configuration) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя одновременно указывать preset_id и configuration для мастер-ноды. Выбери одно."
       );
     }
@@ -149,7 +149,7 @@ const handler = async (params: {
 • Preset мастер-ноды: ${cluster.preset_id}
 • Создан: ${new Date(cluster.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

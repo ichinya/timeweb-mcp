@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateFirewallRuleAction } from "../actions/update-firewall-rule.action";
 import {
@@ -46,7 +46,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.protocol === "icmp" && params.port) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Для протокола icmp параметр port не указывается."
       );
     }
@@ -70,7 +70,7 @@ const handler = async (params: {
 • CIDR: ${r.cidr || "—"}
 • Описание: ${r.description || "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

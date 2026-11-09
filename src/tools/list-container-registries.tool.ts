@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listContainerRegistriesAction } from "../actions/list-container-registries.action";
 
@@ -22,7 +22,7 @@ const handler = async () => {
       `Реестры контейнеров (${registries.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

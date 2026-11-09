@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateSshKeyAction } from "../actions/update-ssh-key.action";
 import { UpdateSshKeyRequestDto } from "../types/dto/update-ssh-key-request.dto";
@@ -33,7 +33,7 @@ const handler = async (params: {
     if (params.is_default !== undefined) patch.is_default = params.is_default;
 
     if (Object.keys(patch).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "⚠️ Не передано ни одного поля для обновления (name, body, is_default)."
       );
     }
@@ -47,7 +47,7 @@ const handler = async (params: {
 • По умолчанию: ${key.is_default ? "✅ Да" : "❌ Нет"}
 • Создан: ${new Date(key.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

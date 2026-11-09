@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { bindFloatingIpAction } from "../actions/bind-floating-ip.action";
 import { FloatingIpResourceType } from "../types/floating-ip.type";
@@ -33,7 +33,7 @@ const handler = async (params: {
 }) => {
   try {
     if (!RESOURCE_TYPES.includes(params.resource_type)) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Неверный resource_type: ${params.resource_type}. Допустимо: ${RESOURCE_TYPES.join(", ")}`
       );
     }
@@ -47,7 +47,7 @@ const handler = async (params: {
       `✅ Плавающий IP ${params.floating_ip_id} привязан к ${params.resource_type} #${params.resource_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

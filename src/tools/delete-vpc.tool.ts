@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteVpcAction } from "../actions/delete-vpc.action";
 
@@ -13,7 +13,7 @@ const handler = async (params: { vpc_id: string }) => {
     await deleteVpcAction(params.vpc_id);
     return createToolResponse(`✅ VPC ${params.vpc_id} удалена.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

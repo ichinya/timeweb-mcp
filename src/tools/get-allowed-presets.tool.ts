@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { ToolNames } from "../types/tool-names.enum";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { getAllowedPresetsAction } from "../actions/get-allowed-presets.action";
 
 const handler = async () => {
@@ -40,7 +40,7 @@ ${
 
     return createToolResponse(responseMessage);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

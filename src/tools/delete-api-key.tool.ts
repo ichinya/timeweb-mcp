@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteApiKeyAction } from "../actions/delete-api-key.action";
 
@@ -13,7 +13,7 @@ const handler = async (params: { token_id: string }) => {
     await deleteApiKeyAction(params.token_id);
     return createToolResponse(`✅ API-токен ${params.token_id} удалён.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

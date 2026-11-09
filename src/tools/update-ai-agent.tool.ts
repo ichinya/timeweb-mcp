@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateAiAgentAction } from "../actions/update-ai-agent.action";
 import { UpdateAiAgentRequestDto } from "../types/dto/update-ai-agent-request.dto";
@@ -87,7 +87,7 @@ const handler = async (params: {
 • Статус: ${agent.status}
 • Тип доступа: ${agent.access_type}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

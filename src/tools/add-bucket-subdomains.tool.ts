@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { addBucketSubdomainsAction } from "../actions/add-bucket-subdomains.action";
 
@@ -30,7 +30,7 @@ const handler = async (params: {
       `📋 Результат добавления поддоменов к хранилищу ${params.bucket_id}:\n\n${lines.join("\n")}\n\nДля выпуска SSL-сертификата используй add_bucket_subdomain_certificate.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

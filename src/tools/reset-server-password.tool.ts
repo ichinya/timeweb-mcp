@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { resetServerPasswordAction } from "../actions/reset-server-password.action";
 
@@ -18,7 +18,7 @@ const handler = async (params: { server_id: number }) => {
         `Новый пароль root придёт на email, привязанный к аккаунту.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

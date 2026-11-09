@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listTldsAction } from "../actions/tlds.action";
 
@@ -19,7 +19,7 @@ const handler = async () => {
       `Доменные зоны (${tlds.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

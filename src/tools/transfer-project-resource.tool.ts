@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { ProjectResourceTypeEnum } from "../types/project-resource-type.enum";
 import { transferProjectResourceAction } from "../actions/transfer-project-resource.action";
@@ -31,7 +31,7 @@ const handler = async (params: {
   try {
     const allowedTypes = Object.values(ProjectResourceTypeEnum);
     if (!allowedTypes.includes(params.resource_type)) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Неверный resource_type: ${params.resource_type}. Доступны: ${allowedTypes.join(", ")}`
       );
     }
@@ -51,7 +51,7 @@ const handler = async (params: {
         `• ID связи: ${r.id}, создан: ${new Date(r.created_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

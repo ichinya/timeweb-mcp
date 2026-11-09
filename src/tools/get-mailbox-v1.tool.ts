@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getMailboxV1Action } from "../actions/get-mailbox-v1.action";
 
@@ -29,7 +29,7 @@ const handler = async (params: { domain: string; mailbox: string }) => {
 • Автоответчик: ${m.auto_reply?.is_enabled ? "вкл" : "выкл"}${m.auto_reply?.subject ? `, тема: "${m.auto_reply.subject}"` : ""}
 • Webmail: ${m.webmail ? "да" : "нет"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

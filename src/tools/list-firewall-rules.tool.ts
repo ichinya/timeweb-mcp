@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listFirewallRulesAction } from "../actions/list-firewall-rules.action";
 
@@ -29,7 +29,7 @@ const handler = async (params: { group_id: string }) => {
       `🛡️ Правила в группе ${params.group_id} (${rules.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listProjectResourcesAction } from "../actions/list-project-resources.action";
 
@@ -37,7 +37,7 @@ const handler = async (params: { project_id: number }) => {
         `• Выделенные серверы: ${dedicated}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

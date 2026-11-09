@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { AddVcsProviderRequestDto } from "../types/dto/add-vcs-provider-request.dto";
 import { addVcsProviderAction } from "../actions/add-vcs-provider.action";
 import { ToolNames } from "../types/tool-names.enum";
@@ -45,7 +45,7 @@ const handler = async (params: AddVcsProviderRequestDto) => {
   try {
 
     if (!params.provider_type) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не указан тип VCS провайдера!`
       );
     }
@@ -53,7 +53,7 @@ const handler = async (params: AddVcsProviderRequestDto) => {
     if (params.provider_type === VcsProviders.GIT) {
       await addVcsProviderAction(params);
     } else {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не поддерживается тип VCS провайдера: используйте git для подключения по ссылке`
       );
     }
@@ -69,7 +69,7 @@ ${params.password ? `• Пароль/токен: ***` : ""}
 
 🎉 Провайдер готов к использованию для деплоя приложений!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

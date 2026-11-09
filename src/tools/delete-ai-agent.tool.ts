@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteAiAgentAction } from "../actions/delete-ai-agent.action";
 
@@ -13,7 +13,7 @@ const handler = async (params: { agent_id: number }) => {
     await deleteAiAgentAction(params.agent_id);
     return createToolResponse(`✅ AI-агент ${params.agent_id} удалён.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

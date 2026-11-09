@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateBalancerAction } from "../actions/update-balancer.action";
 import { UpdateBalancerRequestDto } from "../types/dto/update-balancer-request.dto";
@@ -120,7 +120,7 @@ const handler = async (params: {
     }
 
     if (Object.keys(payload).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "⚠️ Не указано ни одно поле для обновления балансировщика."
       );
     }
@@ -134,7 +134,7 @@ const handler = async (params: {
 • Протокол/Порт: ${b.proto}:${b.port}
 • Алгоритм: ${b.algo}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

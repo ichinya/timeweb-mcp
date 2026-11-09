@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDatabaseClusterAction } from "../actions/update-database-cluster.action";
 
@@ -40,7 +40,7 @@ const handler = async (params: {
   try {
     const { db_cluster_id, ...data } = params;
     if (Object.keys(data).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Необходимо передать хотя бы одно поле для обновления: name, preset_id, description или is_enabled_public_network"
       );
     }
@@ -49,7 +49,7 @@ const handler = async (params: {
       `✅ Кластер ${c.id} (${c.name}) обновлён. Статус: ${c.status}, пресет: ${c.preset_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

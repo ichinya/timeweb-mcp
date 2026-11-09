@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerIpsAction } from "../actions/list-server-ips.action";
 
@@ -24,7 +24,7 @@ const handler = async (params: { server_id: number }) => {
       `IP-адреса сервера ${params.server_id} (${ips.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

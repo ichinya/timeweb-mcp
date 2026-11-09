@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getBucketPresetsAction } from "../actions/get-bucket-presets.action";
 
@@ -22,7 +22,7 @@ const handler = async () => {
       `Тарифы S3-хранилищ (${presets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

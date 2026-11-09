@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDedicatedServerAction } from "../actions/get-dedicated-server.action";
 
@@ -39,7 +39,7 @@ const handler = async (params: { dedicated_id: number }) => {
         `Создан: ${new Date(s.created_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

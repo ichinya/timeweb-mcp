@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createDomainRequestAction } from "../actions/domain-requests.action";
 import { CreateDomainRequestRequestDto } from "../types/dto/create-domain-request-request.dto";
@@ -57,7 +57,7 @@ const handler = async (params: {
 
     if (params.action === "register") {
       if (params.person_id === undefined) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для register заявки поле person_id обязательно."
         );
       }
@@ -92,7 +92,7 @@ const handler = async (params: {
       };
     } else {
       if (!params.auth_code) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для transfer заявки поле auth_code обязательно."
         );
       }
@@ -115,7 +115,7 @@ const handler = async (params: {
 
 Следующий шаг — оплатить или обновить заявку через update_domain_request.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

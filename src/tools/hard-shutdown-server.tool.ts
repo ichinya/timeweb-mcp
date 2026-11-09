@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { hardShutdownServerAction } from "../actions/hard-shutdown-server.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда принудительного выключения отправлена для сервера ${params.server_id}. Эквивалент выдёргивания кабеля питания — ОС не успеет корректно завершиться.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteDatabaseAdminAction } from "../actions/delete-database-admin.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: {
       `✅ Пользователь ${params.admin_id} удалён из кластера ${params.db_cluster_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

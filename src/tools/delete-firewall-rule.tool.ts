@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteFirewallRuleAction } from "../actions/delete-firewall-rule.action";
 
@@ -20,7 +20,7 @@ const handler = async (params: { group_id: string; rule_id: string }) => {
       `✅ Правило firewall ${params.rule_id} удалено из группы ${params.group_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

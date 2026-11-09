@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDatabaseClusterAction } from "../actions/get-database-cluster.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { db_cluster_id: number }) => {
     const c = await getDatabaseClusterAction(params.db_cluster_id);
 
     if (!c) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Кластер ${params.db_cluster_id} не найден`
       );
     }
@@ -39,7 +39,7 @@ const handler = async (params: { db_cluster_id: number }) => {
 Полный JSON:
 ${JSON.stringify(c, null, 2)}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

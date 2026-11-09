@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createNetworkDriveAction } from "../actions/create-network-drive.action";
 
@@ -49,7 +49,7 @@ const handler = async (params: {
 
 🎉 Диск готов к подключению (используй mount_network_drive).`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

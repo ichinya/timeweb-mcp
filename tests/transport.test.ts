@@ -1,4 +1,5 @@
 import { networkAttempts } from "./network-guard";
+import "./tool-contracts.test";
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
 import { getEventListeners } from "node:events";
@@ -152,7 +153,7 @@ test("lost create response has one independent provider effect and no second POS
     assert.match(text, /Результат запроса неизвестен/);
     assert.match(text, /Изменение могло выполниться/);
     assert.doesNotMatch(text, /Не удалось создать|не создан|response lost|decoder failed/);
-    assert.equal("isError" in result, false); // #22 intentionally stays separate.
+    assert.equal(result.isError, true);
     assert.deepEqual(journal, [{ method: "post", id: 7 }]);
     await tick();
     await tick();
@@ -435,7 +436,7 @@ test("sanitized errors cross the real MCP protocol without changing content shap
     const result = await pair.client.callTool({ name: ToolNames.CREATE_SERVER, arguments: { name: "offline", preset_id: 1, os_id: 1 } });
     assert.ok(!JSON.stringify(result).includes(secret));
     assert.match(JSON.stringify(result), /Результат запроса неизвестен/);
-    assert.equal("isError" in result, false);
+    assert.equal(result.isError, true);
   } finally { await pair.close(); }
 });
 

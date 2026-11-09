@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getMailDomainInfoAction } from "../actions/get-mail-domain-info.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { domain: string }) => {
 • Сборный адрес для ошибочных писем: ${info.email || "—"}
 • Использованное место: ${info.used} МБ`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

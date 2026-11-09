@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateImageAction } from "../actions/update-image.action";
 
@@ -23,7 +23,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.name === undefined && params.description === undefined) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно передать хотя бы одно из полей: name или description."
       );
     }
@@ -37,7 +37,7 @@ const handler = async (params: {
       `✅ Образ ${image.id} обновлён. Имя: "${image.name || "(без имени)"}", описание: "${image.description || "—"}".`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

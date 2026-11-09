@@ -1,3 +1,5 @@
+import { appsApiClient } from "../api/apps";
+import { normalizeRepositoryUrl, parseVcsProviders, parseVcsRepositories } from "../vcs-repository";
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { AppTypes } from "../types/app-types.enum";
@@ -6,7 +8,7 @@ import {
   FrameworksFrontend,
 } from "../types/app-frameworks.type";
 import { ToolNames } from "../types/tool-names.enum";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { createAppAction } from "../actions/create-app.action";
 import { CreateAppParams } from "../types/create-app-params.type";
 import { getVcsProvidersAction } from "../actions/get-vcs-providers.action";
@@ -30,14 +32,14 @@ const inputSchema = {
 
   provider_id: z
     .string({
-      description: `ID подключенного VCS провайдера в timeweb cloud. АВТОМАТИЧЕСКИ запросить с помощью tool ${ToolNames.GET_VCS_PROVIDER_BY_REPOSITORY_URL} подключенные провайдеры, и выбрать подходящий по названию репозитория. Если нет подходящих, создать новый репозиторий автоматически используя tool ${ToolNames.ADD_VCS_PROVIDER}.`,
+      description: `ID выбранного подключенного VCS провайдера. Получить через ${ToolNames.GET_VCS_PROVIDERS} или ${ToolNames.GET_VCS_PROVIDER_BY_REPOSITORY_URL}. ID сохраняется без автоматической замены.`,
     })
     .uuid("ID провайдера должен быть валидным UUID")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID VCS провайдера"),
 
   repository_id: z
     .string({
-      description: `ID репозитория в timeweb cloud. АВТОМАТИЧЕСКИ запросить с помощью tool ${ToolNames.GET_VCS_PROVIDER_REPOSITORIES} подключенные репозитории с использованием provider_id, и выбрать подходящий по названию. Если нет подходящих, НЕ создавать новый репозиторий автоматически`,
+      description: `ID репозитория выбранного провайдера. Получить через ${ToolNames.GET_VCS_PROVIDER_REPOSITORIES} и проверить полный URL. Не создавать новый репозиторий автоматически.`,
     })
     .uuid("ID репозитория должен быть валидным UUID")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - ID репозитория"),
@@ -47,7 +49,7 @@ const inputSchema = {
       description:
         "URL подключенного репозитория. АВТОМАТИЧЕСКИ достать из папки .git/refs/remotes/origin/, не запуская команды в терминале. URL должен быть в формате https://github.com/user/repo",
     })
-    .url("URL должен быть валидным")
+    .refine(value => normalizeRepositoryUrl(value) !== undefined, "Некорректный URL Git-репозитория")
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - URL репозитория"),
 
   preset_id: z
@@ -168,29 +170,32 @@ const inputSchema = {
     .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - всегда false"),
 };
 
-const handler = async (params: CreateAppParams) => {
-  try {
-    const [providers, presets, deploySettings] = await Promise.all([
-      getVcsProvidersAction(),
-      getAllowedPresetsAction(),
-      getDeploySettingsAction(),
-    ]);
-    const repositoryName = params.repository_url
-      .split("/")
-      .pop()
-      ?.replace(".git", "");
-    const provider = providers?.find(
-      (provider) => repositoryName && provider.login.includes(repositoryName)
-    );
+type AppClient = Pick<typeof appsApiClient, "getVcsProviders" | "getVcsProviderRepositories" | "getAllowedPresets" | "getDeploySettings" | "createApp">;
+const selectionSchema = z.object({ provider_id: inputSchema.provider_id, repository_id: inputSchema.repository_id,
+  repository_url: inputSchema.repository_url, preset_id: inputSchema.preset_id, type: inputSchema.type });
 
+export const createAppHandler = (client: AppClient = appsApiClient) => async (params: CreateAppParams) => {
+  try {
+    if (!selectionSchema.safeParse(params).success) {
+      return createToolErrorResponse("❌ Некорректные параметры выбора провайдера, репозитория или тарифа.");
+    }
+    const [providerResponse, presets, deploySettings] = await Promise.all([
+      getVcsProvidersAction(client), getAllowedPresetsAction(client), getDeploySettingsAction(client),
+    ]);
+    const providers = parseVcsProviders(providerResponse);
+    const provider = providers.find(item => item.provider_id === params.provider_id);
     if (!provider) {
-      return createToolResponse(
-        `❌ Не удалось найти VCS провайдер для репозитория "${params.repository_url}". Нужно добавить VCS провайдер с помощью tool ${ToolNames.ADD_VCS_PROVIDER}`
-      );
+      return createToolErrorResponse("❌ Указанный VCS провайдер недоступен. Выберите подключенный provider_id.");
+    }
+    const repositoryResponse = await client.getVcsProviderRepositories(params.provider_id);
+    const repositories = parseVcsRepositories(repositoryResponse?.repositories);
+    const repository = repositories.find(item => item.id === params.repository_id);
+    if (!repository || normalizeRepositoryUrl(repository.url) !== normalizeRepositoryUrl(params.repository_url)) {
+      return createToolErrorResponse("❌ Репозиторий с указанными ID и URL недоступен у выбранного VCS провайдера.");
     }
 
     if (!presets) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось получить список пресетов для создания приложения "${params.name}" в Timeweb Cloud`
       );
     }
@@ -199,23 +204,22 @@ const handler = async (params: CreateAppParams) => {
       params.type === AppTypes.FRONTEND
         ? "frontend_presets"
         : "backend_presets";
-    let preset = presets[presetType]?.find(
-      (preset) => preset.id === params.preset_id
-    );
-
-    if (!preset) {
-      preset = presets[presetType]?.[0];
+    const selectedPresets: unknown = presets[presetType];
+    if (!Array.isArray(selectedPresets) || selectedPresets.some(item =>
+      !item || typeof item !== "object" || !Number.isInteger(item.id) || item.id <= 0)) {
+      return createToolErrorResponse("❌ Не удалось проверить тарифы: некорректный ответ API. Создание не отправлено.");
     }
+    const preset = selectedPresets.find(item => item.id === params.preset_id);
     if (!preset) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не корректный ID пресета для создания приложения "${params.name}" в Timeweb Cloud. Используйте ресурс ${ResourceNames.ALLOWED_PRESETS}, чтобы получить список доступных пресетов`
       );
     }
 
     const appParams = {
       ...params,
-      preset_id: preset.id,
-      provider_id: provider.provider_id,
+      preset_id: params.preset_id,
+      provider_id: params.provider_id,
     };
 
     const deploySetting = deploySettings?.find(
@@ -227,10 +231,10 @@ const handler = async (params: CreateAppParams) => {
       params.index_dir = deploySetting.index_dir;
     }
 
-    const app = await createAppAction(appParams);
+    const app = await createAppAction(appParams, client);
 
     if (!app) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось создать приложение "${params.name}" в Timeweb Cloud`
       );
     }
@@ -259,7 +263,7 @@ ${
 ОБЯЗАТЕЛЬНО УВЕДОМИ ПОЛЬЗОВАТЕЛЯ, что перед использованием приложения необходимо вручную настроить переменные окружения в панели управления Timeweb Cloud, так как у чатбота нет доступа к файлу .env вашего проекта.
 🎉 Приложение скоро будет готово к использованию!`);
   } catch (error: unknown) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
@@ -268,5 +272,5 @@ export const createAppTool = {
   title: "Создание приложения в Timeweb Cloud",
   description: `Создает приложение в Timeweb Cloud с автоматическим определением параметров проекта.`,
   inputSchema,
-  handler,
+  handler: createAppHandler(),
 };

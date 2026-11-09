@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getBucketAction } from "../actions/get-bucket.action";
 
@@ -37,7 +37,7 @@ const handler = async (params: { bucket_id: number }) => {
 • В карантине с: ${b.moved_in_quarantine_at ? new Date(b.moved_in_quarantine_at).toLocaleString("ru-RU") : "—"}
 • Website config: ${b.website_config?.enabled ? "включён" : "выключен"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

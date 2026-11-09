@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createServerDiskBackupAction } from "../actions/create-server-disk-backup.action";
 
@@ -30,7 +30,7 @@ const handler = async (params: {
       `✅ Бэкап создан: ID ${backup.id}, имя "${backup.name}", статус: ${backup.status}. Процесс снятия бэкапа идёт асинхронно — повторно проверь статус через list_server_disk_backups.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

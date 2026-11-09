@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerPresetsAction } from "../actions/list-server-presets.action";
 
@@ -29,7 +29,7 @@ const handler = async () => {
       `📋 Тарифы VPS-серверов (${presets.length}):\n\n${lines.join("\n\n")}\n\n💡 Используйте ID тарифа при создании сервера в поле preset_id.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

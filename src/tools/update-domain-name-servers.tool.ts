@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDomainNameServersAction } from "../actions/update-domain-name-servers.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.name_servers.length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Список name_servers не может быть пустым."
       );
     }
@@ -39,7 +39,7 @@ const handler = async (params: {
       `✅ Name-серверы домена ${params.fqdn} обновлены (записей: ${count}).\nСтатус задачи: ${groups[0]?.task_status ?? "—"}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

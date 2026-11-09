@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getDatabaseAdminAction } from "../actions/get-database-admin.action";
 
@@ -42,7 +42,7 @@ ${(a.instances ?? [])
   .join("\n") || "  —"}
 • Создан: ${new Date(a.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

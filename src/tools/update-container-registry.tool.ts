@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateContainerRegistryAction } from "../actions/update-container-registry.action";
 
@@ -35,12 +35,12 @@ const handler = async (params: {
   disk?: number;
 }) => {
   if (params.preset_id && params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нельзя передавать одновременно preset_id и configurator_id. Выбери один режим."
     );
   }
   if (params.configurator_id && !params.disk) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ При использовании configurator_id обязательно укажи disk (размер диска в ГБ)."
     );
   }
@@ -49,7 +49,7 @@ const handler = async (params: {
     !params.preset_id &&
     !params.configurator_id
   ) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужно передать хотя бы одно поле для обновления: description, preset_id или configurator_id."
     );
   }
@@ -73,7 +73,7 @@ const handler = async (params: {
         `Диск: ${r.disk_stats.used}/${r.disk_stats.size} ГБ`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

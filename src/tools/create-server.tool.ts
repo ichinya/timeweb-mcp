@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createServerAction } from "../actions/create-server.action";
 import { CreateServerRequestDto } from "../types/dto/create-server-request.dto";
@@ -106,22 +106,22 @@ export const createServerHandler = (create: typeof createServerAction = createSe
   cloud_init?: string;
 }) => {
   if (params.preset_id && params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нельзя передавать одновременно preset_id и configurator_id. Выбери один режим."
     );
   }
   if (!params.preset_id && !params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужен либо preset_id (готовый тариф), либо configurator_id (кастомная конфигурация)."
     );
   }
   if (params.os_id && params.image_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нельзя передавать одновременно os_id и image_id. Выбери одно."
     );
   }
   if (!params.os_id && !params.image_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужен либо os_id (ОС из каталога), либо image_id (UUID образа/snapshot)."
     );
   }
@@ -131,7 +131,7 @@ export const createServerHandler = (create: typeof createServerAction = createSe
       params.ram === undefined ||
       params.disk === undefined
     ) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ В режиме configurator_id обязательны поля cpu, ram, disk."
       );
     }
@@ -186,7 +186,7 @@ export const createServerHandler = (create: typeof createServerAction = createSe
         `ℹ️ Создание занимает несколько минут. Проверь статус через get_server.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

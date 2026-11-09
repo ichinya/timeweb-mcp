@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteServerAction } from "../actions/delete-server.action";
 
@@ -20,13 +20,13 @@ const inputSchema = {
     .describe("Код подтверждения 2FA (передаётся вместе с hash)"),
 };
 
-const handler = async (params: {
+export const deleteServerHandler = (remove = deleteServerAction) => async (params: {
   server_id: number;
   hash?: string;
   code?: string;
 }) => {
   try {
-    const result = await deleteServerAction(params.server_id, {
+    const result = await remove(params.server_id, {
       hash: params.hash,
       code: params.code,
     });
@@ -45,7 +45,7 @@ const handler = async (params: {
         (quarantined ? "\nЕго можно будет восстановить в течение периода карантина." : "")
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
@@ -55,5 +55,5 @@ export const deleteServerTool = {
   description:
     "Удаляет сервер. Для аккаунтов с 2FA первый вызов возвращает hash — повторный вызов с hash и code завершит удаление. Удалённый сервер может быть перемещён в карантин.",
   inputSchema,
-  handler,
+  handler: deleteServerHandler(),
 };

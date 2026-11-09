@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { hardRebootServerAction } from "../actions/hard-reboot-server.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда принудительной перезагрузки отправлена для сервера ${params.server_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

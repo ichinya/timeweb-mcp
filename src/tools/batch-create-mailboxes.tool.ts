@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { batchCreateMailboxesAction } from "../actions/batch-create-mailboxes.action";
 
@@ -59,7 +59,7 @@ const handler = async (params: {
       `✅ Массовое создание завершено. Создано: ${batch.mailboxes.length}\n${createdLines.join("\n")}${errorsBlock}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

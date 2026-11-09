@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteProjectAction } from "../actions/delete-project.action";
 
@@ -15,7 +15,7 @@ const handler = async (params: { project_id: number }) => {
     await deleteProjectAction(params.project_id);
     return createToolResponse(`✅ Проект ${params.project_id} удалён.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

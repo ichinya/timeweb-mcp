@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { editK8sClusterAction } from "../actions/edit-k8s-cluster.action";
 
@@ -37,7 +37,7 @@ const handler = async (params: {
 }) => {
   try {
     if (!params.name && !params.description && !params.oidc_provider) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Ничего не указано для изменения. Передай хотя бы одно: name, description или oidc_provider."
       );
     }
@@ -52,7 +52,7 @@ const handler = async (params: {
       `✅ Кластер ${cluster.id} обновлён. Название: ${cluster.name}, описание: ${cluster.description || "—"}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

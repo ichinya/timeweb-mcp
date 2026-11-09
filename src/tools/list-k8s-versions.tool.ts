@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listK8sVersionsAction } from "../actions/list-k8s-versions.action";
 
@@ -15,7 +15,7 @@ const handler = async () => {
       `Доступные версии Kubernetes (${versions.length}):\n${versions.map((v) => `• ${v}`).join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

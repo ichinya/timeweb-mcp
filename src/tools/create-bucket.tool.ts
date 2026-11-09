@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createBucketAction } from "../actions/create-bucket.action";
 
@@ -56,13 +56,13 @@ const handler = async (params: {
       params.configurator_disk_mb !== undefined;
 
     if (hasPreset && hasConfigurator) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя передавать одновременно preset_id и конфигуратор. Выбери что-то одно."
       );
     }
 
     if (!hasPreset && !hasConfigurator) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно передать либо preset_id, либо configurator_id + configurator_disk_mb."
       );
     }
@@ -102,7 +102,7 @@ const handler = async (params: {
 
 🎉 Хранилище готово к использованию!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

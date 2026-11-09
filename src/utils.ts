@@ -21,8 +21,18 @@ export const getVersion = (): string => {
   }
 };
 
-export const createToolResponse = (text: string) => ({
+export type ToolTextResponse = {
+  content: { type: "text"; text: string }[];
+  isError?: boolean;
+};
+
+export const createToolResponse = (text: string): ToolTextResponse => ({
   content: [{ type: "text" as const, text }],
+});
+
+export const createToolErrorResponse = (text: string) => ({
+  ...createToolResponse(text),
+  isError: true as const,
 });
 
 export const createResourceResponse = (uri: string, text: string) => ({

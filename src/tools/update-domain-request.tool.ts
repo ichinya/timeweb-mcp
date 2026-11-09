@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDomainRequestAction } from "../actions/domain-requests.action";
 import { UpdateDomainRequestBodyDto } from "../types/dto/create-domain-request-request.dto";
@@ -66,7 +66,7 @@ const handler = async (params: {
       };
     } else if (params.money_source === "invoice") {
       if (!params.payment_type || params.payer_id === undefined) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для money_source=invoice нужны payment_type и payer_id."
         );
       }
@@ -78,7 +78,7 @@ const handler = async (params: {
       };
     } else if (params.money_source === "free") {
       if (!params.auth_code) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для money_source=free нужен auth_code."
         );
       }
@@ -89,7 +89,7 @@ const handler = async (params: {
       };
     } else {
       if (params.bonus_id === undefined) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для money_source=bonus нужен bonus_id."
         );
       }
@@ -107,7 +107,7 @@ const handler = async (params: {
 • Источник оплаты: ${r.money_source ?? params.money_source}
 • Сообщение: ${r.message ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

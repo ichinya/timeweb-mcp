@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse, getPresetDatabaseType } from "../utils";
+import { createToolResponse, createToolErrorResponse, getPresetDatabaseType } from "../utils";
 import { createDatabaseAction } from "../actions/create-database.action";
 import { ToolNames } from "../types/tool-names.enum";
 import { DatabaseTypes } from "../types/database-types.enum";
@@ -81,7 +81,7 @@ const handler = async (params: {
     const availableZones = Object.values(AvailabilityZones);
 
     if (!availableZones.includes(params.availability_zone)) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Неверная зона доступности: ${params.availability_zone}. Выбери из списка: ${availableZones.join(", ")}`
       );
     }
@@ -89,7 +89,7 @@ const handler = async (params: {
     const availableTypes = Object.values(DatabaseTypes);
 
     if (!availableTypes.includes(params.type)) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Неверный тип базы данных: ${params.type}. Выбери из списка: ${availableTypes.join(", ")}`
       );
     }
@@ -98,7 +98,7 @@ const handler = async (params: {
     const availablePresets = allPresets.filter(preset => preset.type === getPresetDatabaseType(params.type));
 
     if (!availablePresets || !availablePresets.length) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось получить список пресетов баз данных. Убедитесь, что тип базы данных "${params.type}" соответствует типу пресета`
       );
     }
@@ -106,7 +106,7 @@ const handler = async (params: {
     const preset = availablePresets.find(preset => preset.id === params.preset_id);
 
     if (!preset) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не корректный ID пресета для создания базы данных "${params.name}" в Timeweb Cloud. Используй доступые пресеты для этого типа базы данных ${JSON.stringify(availablePresets, null, 2)}`
       );
     }    
@@ -123,7 +123,7 @@ const handler = async (params: {
     });
 
     if (!db) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось создать базу данных "${params.name}"`
       );
     }
@@ -148,7 +148,7 @@ const handler = async (params: {
 ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ К БАЗЕ ДАННЫХ БУДУТ ДОСТУПНЫ ПОСЛЕ СОЗДАНИЯ В ПАНЕЛИ УПРАВЛЕНИЯ TIMEWEB CLOUD
 🎉 База данных скоро будет готова к использованию!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

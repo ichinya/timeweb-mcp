@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteImageAction } from "../actions/delete-image.action";
 
@@ -15,7 +15,7 @@ const handler = async (params: { image_id: string }) => {
     await deleteImageAction(params.image_id);
     return createToolResponse(`✅ Образ ${params.image_id} удалён.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

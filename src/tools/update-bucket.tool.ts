@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateBucketAction } from "../actions/update-bucket.action";
 
@@ -45,7 +45,7 @@ const handler = async (params: {
       params.configurator_disk_mb !== undefined;
 
     if (hasPreset && hasConfigurator) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя передавать одновременно preset_id и конфигуратор."
       );
     }
@@ -63,7 +63,7 @@ const handler = async (params: {
     if (params.description) body.description = params.description;
 
     if (Object.keys(body).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Передай хотя бы один параметр для изменения (preset_id, configurator, bucket_type, description)."
       );
     }
@@ -80,7 +80,7 @@ const handler = async (params: {
 • Configurator ID: ${bucket.configurator_id ?? "—"}
 • Описание: ${bucket.description || "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

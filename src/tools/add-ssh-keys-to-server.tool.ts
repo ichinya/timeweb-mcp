@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { addSshKeysToServerAction } from "../actions/add-ssh-keys-to-server.action";
 
@@ -20,7 +20,7 @@ const handler = async (params: {
 }) => {
   try {
     if (!params.ssh_key_ids || params.ssh_key_ids.length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно передать хотя бы один ID SSH-ключа."
       );
     }
@@ -31,7 +31,7 @@ const handler = async (params: {
       `✅ SSH-ключи [${params.ssh_key_ids.join(", ")}] добавлены на сервер ${params.server_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

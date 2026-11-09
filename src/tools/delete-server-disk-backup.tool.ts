@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteServerDiskBackupAction } from "../actions/delete-server-disk-backup.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: {
       `✅ Бэкап ${params.backup_id} удалён с диска ${params.disk_id} сервера ${params.server_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

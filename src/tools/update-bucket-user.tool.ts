@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateBucketUserAction } from "../actions/update-bucket-user.action";
 
@@ -31,7 +31,7 @@ const handler = async (params: { user_id: number; secret_key: string }) => {
 
 ⚠️ Обнови конфигурацию всех клиентов, подключающихся к хранилищу.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

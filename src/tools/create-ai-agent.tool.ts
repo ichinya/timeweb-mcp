@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createAiAgentAction } from "../actions/create-ai-agent.action";
 import { CreateAiAgentRequestDto } from "../types/dto/create-ai-agent-request.dto";
@@ -88,7 +88,7 @@ const handler = async (params: {
 • Модель ID: ${agent.model_id}
 ${agent.total_tokens !== undefined ? `• Всего токенов: ${agent.total_tokens}` : ""}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

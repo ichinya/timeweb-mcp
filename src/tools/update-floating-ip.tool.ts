@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateFloatingIpAction } from "../actions/update-floating-ip.action";
 import { UpdateFloatingIpRequestDto } from "../types/dto/update-floating-ip-request.dto";
@@ -26,7 +26,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.comment === undefined && params.ptr === undefined) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Нужно указать хотя бы одно поле для изменения: comment или ptr`
       );
     }
@@ -43,7 +43,7 @@ const handler = async (params: {
 • Комментарий: ${ip.comment ?? "—"}
 • PTR: ${ip.ptr ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

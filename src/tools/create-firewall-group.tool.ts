@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createFirewallGroupAction } from "../actions/create-firewall-group.action";
 import { FirewallPolicy } from "../types/firewall-group.type";
@@ -42,7 +42,7 @@ const handler = async (params: {
 • Политика: ${g.policy}
 • Создана: ${new Date(g.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

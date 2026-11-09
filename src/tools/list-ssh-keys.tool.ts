@@ -1,13 +1,13 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listSshKeysAction } from "../actions/list-ssh-keys.action";
 
 const inputSchema = {};
 
-const handler = async () => {
+export const listSshKeysHandler = (list = listSshKeysAction) => async () => {
   try {
-    const keys = await listSshKeysAction();
+    const keys = await list();
 
     if (keys.length === 0) {
       return createToolResponse("На аккаунте нет SSH-ключей.");
@@ -26,7 +26,7 @@ const handler = async () => {
       `SSH-ключи (${keys.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
@@ -36,5 +36,5 @@ export const listSshKeysTool = {
   description:
     "Возвращает список всех SSH-ключей аккаунта: ID, имя, дата создания, флаг is_default и список серверов, на которых ключ используется. Используй перед операциями с SSH-ключами чтобы получить их ID.",
   inputSchema,
-  handler,
+  handler: listSshKeysHandler(),
 };

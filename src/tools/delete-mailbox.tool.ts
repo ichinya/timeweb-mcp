@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteMailboxAction } from "../actions/delete-mailbox.action";
 
@@ -18,7 +18,7 @@ const handler = async (params: { domain: string; mailbox: string }) => {
       `✅ Почтовый ящик ${params.mailbox}@${params.domain} удалён.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

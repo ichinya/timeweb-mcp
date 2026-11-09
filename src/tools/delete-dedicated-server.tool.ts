@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteDedicatedServerAction } from "../actions/delete-dedicated-server.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { dedicated_id: number }) => {
       `✅ Выделенный сервер ${params.dedicated_id} удалён.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

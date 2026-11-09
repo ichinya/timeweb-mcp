@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteImageDownloadAction } from "../actions/delete-image-download.action";
 
@@ -21,7 +21,7 @@ const handler = async (params: {
       `✅ Ссылка на скачивание ${params.image_url_id} (образ ${params.image_id}) удалена.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

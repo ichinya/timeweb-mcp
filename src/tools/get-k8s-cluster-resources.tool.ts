@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getK8sClusterResourcesAction } from "../actions/get-k8s-cluster-resources.action";
 
@@ -21,7 +21,7 @@ const handler = async (params: { cluster_id: number }) => {
 • Memory: ${fmt(r.memory)}
 • Pods: ${fmt(r.pods)}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

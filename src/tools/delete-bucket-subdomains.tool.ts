@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteBucketSubdomainsAction } from "../actions/delete-bucket-subdomains.action";
 
@@ -30,7 +30,7 @@ const handler = async (params: {
       `✅ Результат удаления поддоменов из хранилища ${params.bucket_id}:\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

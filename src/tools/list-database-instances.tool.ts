@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDatabaseInstancesAction } from "../actions/list-database-instances.action";
 
@@ -31,7 +31,7 @@ const handler = async (params: { db_cluster_id: number }) => {
       `Инстансы баз данных в кластере ${params.db_cluster_id} (${instances.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

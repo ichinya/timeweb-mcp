@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { unmountNetworkDriveAction } from "../actions/unmount-network-drive.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { network_drive_id: string }) => {
       `✅ Сетевой диск ${params.network_drive_id} отключён от сервиса.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

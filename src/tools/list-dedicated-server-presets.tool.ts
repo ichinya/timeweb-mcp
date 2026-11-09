@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDedicatedServerPresetsAction } from "../actions/list-dedicated-server-presets.action";
 import { DedicatedServerLocation } from "../types/dedicated-server.type";
@@ -37,7 +37,7 @@ const handler = async (params: { location?: DedicatedServerLocation }) => {
       `Тарифы выделенных серверов${params.location ? ` (${params.location})` : ""} — всего ${presets.length}:\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,7 @@
 import { SshKey } from "../ssh-key.type";
 
 export interface UpdateSshKeyResponseDto {
-  ssh_key: SshKey;
+  ssh_key?: SshKey;
+  "ssh-key"?: SshKey;
   meta: { total: number };
 }

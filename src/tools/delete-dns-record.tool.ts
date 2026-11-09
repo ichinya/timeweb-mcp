@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteDnsRecordAction } from "../actions/delete-dns-record.action";
 
@@ -18,7 +18,7 @@ const handler = async (params: { fqdn: string; record_id: number }) => {
       `✅ DNS-запись ${params.record_id} удалена для домена ${params.fqdn}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

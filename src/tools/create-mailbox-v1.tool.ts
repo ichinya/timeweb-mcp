@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createMailboxV1Action } from "../actions/create-mailbox-v1.action";
 
@@ -35,7 +35,7 @@ const handler = async (params: {
 • Адрес: ${fullAddress}
 • Комментарий: ${m.comment || "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateVpcAction } from "../actions/update-vpc.action";
 import { UpdateVpcRequestDto } from "../types/dto/update-vpc-request.dto";
@@ -18,7 +18,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.name === undefined && params.description === undefined) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Нужно указать хотя бы одно поле для изменения: name или description`
       );
     }
@@ -34,7 +34,7 @@ const handler = async (params: {
 • Название: ${vpc.name}
 • Описание: ${vpc.description ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDatabaseInstanceAction } from "../actions/update-database-instance.action";
 
@@ -31,7 +31,7 @@ const handler = async (params: {
   try {
     const { db_cluster_id, instance_id, ...data } = params;
     if (Object.keys(data).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Передайте хотя бы одно поле для обновления: name или description"
       );
     }
@@ -44,7 +44,7 @@ const handler = async (params: {
       `✅ Инстанс ${i.id} (${i.name}) в кластере ${db_cluster_id} обновлён.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

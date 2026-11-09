@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDedicatedServerAction } from "../actions/update-dedicated-server.action";
 
@@ -26,7 +26,7 @@ const handler = async (params: {
   comment?: string;
 }) => {
   if (params.name === undefined && params.comment === undefined) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужно передать хотя бы одно поле для обновления: name или comment."
     );
   }
@@ -44,7 +44,7 @@ const handler = async (params: {
         `Статус: ${s.status}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

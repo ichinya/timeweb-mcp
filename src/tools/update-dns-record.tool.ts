@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDnsRecordAction } from "../actions/update-dns-record.action";
 import { CreateDnsRecordV2RequestDto } from "../types/dto/create-dns-record-request.dto";
@@ -67,7 +67,7 @@ const handler = async (params: {
 • Значение: ${record.data.value ?? "—"}
 • TTL: ${record.ttl ?? "default"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

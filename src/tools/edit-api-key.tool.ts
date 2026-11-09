@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { editApiKeyAction } from "../actions/edit-api-key.action";
 import { EditApiKeyRequestDto } from "../types/dto/edit-api-key-request.dto";
@@ -25,7 +25,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.name === undefined && params.is_able_to_delete === undefined) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Нужно указать хотя бы одно поле для изменения: name или is_able_to_delete`
       );
     }
@@ -42,7 +42,7 @@ const handler = async (params: {
 • Имя: ${apiKey.name}
 • Удаление сервисов: ${apiKey.is_able_to_delete ? "✅ разрешено" : "❌ запрещено"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

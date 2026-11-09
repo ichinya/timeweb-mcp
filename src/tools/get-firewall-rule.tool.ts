@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getFirewallRuleAction } from "../actions/get-firewall-rule.action";
 
@@ -28,7 +28,7 @@ const handler = async (params: { group_id: string; rule_id: string }) => {
 • CIDR: ${r.cidr || "—"}
 • Описание: ${r.description || "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

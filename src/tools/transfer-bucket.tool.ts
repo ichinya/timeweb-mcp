@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { transferBucketAction } from "../actions/transfer-bucket.action";
 
@@ -60,7 +60,7 @@ const handler = async (params: {
       `✅ Запущен перенос хранилища '${params.bucket_name}' (${params.endpoint}) → '${params.new_bucket_name}' в Timeweb Cloud.\n\nИспользуй get_bucket_transfer_status чтобы отслеживать прогресс.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

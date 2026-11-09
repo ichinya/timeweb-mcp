@@ -8,7 +8,7 @@ export const createAppAction = async ({
   system_dependencies = [],
   envs = {},
   ...params
-}: CreateAppParams) => {
+}: CreateAppParams, client: Pick<typeof appsApiClient, "createApp"> = appsApiClient) => {
   const appParams: CreateAppParams = { ...params };
 
   if (appParams.type === AppTypes.FRONTEND) {
@@ -20,7 +20,7 @@ export const createAppAction = async ({
   appParams.system_dependencies = system_dependencies;
   appParams.envs = envs;
 
-  const response = await appsApiClient.createApp(appParams);
+  const response = await client.createApp(appParams);
 
   return response?.app || null;
 };

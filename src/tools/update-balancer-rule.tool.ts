@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateBalancerRuleAction } from "../actions/update-balancer-rule.action";
 
@@ -56,7 +56,7 @@ const handler = async (params: {
 • Вход: ${rule.balancer_proto}:${rule.balancer_port}
 • На backend: ${rule.server_proto}:${rule.server_port}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

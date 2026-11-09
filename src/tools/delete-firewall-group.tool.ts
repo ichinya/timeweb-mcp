@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteFirewallGroupAction } from "../actions/delete-firewall-group.action";
 
@@ -19,7 +19,7 @@ const handler = async (params: { group_id: string }) => {
       `✅ Группа правил firewall ${params.group_id} удалена.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

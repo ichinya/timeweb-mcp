@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createDnsRecordAction } from "../actions/create-dns-record.action";
 import { CreateDnsRecordV2RequestDto } from "../types/dto/create-dns-record-request.dto";
@@ -71,13 +71,13 @@ const handler = async (params: {
 }) => {
   try {
     if (params.type !== "SRV" && !params.value) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Для записи типа ${params.type} поле value обязательно.`
       );
     }
     if (params.type === "SRV") {
       if (!params.host || !params.port || !params.service || !params.protocol) {
-        return createToolResponse(
+        return createToolErrorResponse(
           "❌ Для SRV-записи нужны все поля: host, port, service, protocol."
         );
       }
@@ -103,7 +103,7 @@ const handler = async (params: {
 • TTL: ${record.ttl ?? "default"}
 ${record.data.subdomain ? `• Поддомен: ${record.data.subdomain}\n` : ""}${record.data.priority !== undefined ? `• Приоритет: ${record.data.priority}` : ""}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

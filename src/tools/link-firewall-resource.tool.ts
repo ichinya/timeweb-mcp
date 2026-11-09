@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { linkFirewallResourceAction } from "../actions/link-firewall-resource.action";
 import { FirewallResourceType } from "../types/firewall-resource.type";
@@ -34,7 +34,7 @@ const handler = async (params: {
       `✅ Ресурс ${r.type} #${r.id} привязан к группе firewall ${params.group_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

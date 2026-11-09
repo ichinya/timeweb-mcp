@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { getVpcsAction } from "../actions/get-vpcs.action";
 import { ToolNames } from "../types/tool-names.enum";
 
@@ -21,7 +21,7 @@ const handler = async () => {
 
     🎉 Список VPC успешно получен!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

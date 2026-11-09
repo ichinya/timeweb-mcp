@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listLocationsAction } from "../actions/list-locations.action";
 
@@ -22,7 +22,7 @@ const handler = async () => {
       `🌍 Локации (${locations.length}):\n\n${lines.join("\n")}\n\n💡 Используйте значение location при создании VPS (фильтр по локации для тарифов/конфигураторов) и availability_zone для выбора зоны.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

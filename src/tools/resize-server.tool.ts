@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { resizeServerAction } from "../actions/resize-server.action";
 
@@ -46,12 +46,12 @@ const handler = async (params: {
   gpu?: number;
 }) => {
   if (params.preset_id && params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нельзя передавать одновременно preset_id и configurator_id. Выбери один режим."
     );
   }
   if (!params.preset_id && !params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужен либо preset_id (готовый тариф), либо configurator_id (кастомная конфигурация)."
     );
   }
@@ -76,7 +76,7 @@ const handler = async (params: {
         `Статус: ${server.status} — процесс ресайза занимает несколько минут.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

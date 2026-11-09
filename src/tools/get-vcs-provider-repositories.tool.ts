@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getVcsProviderRepositoriesAction } from "../actions/get-vcs-provider-repositories.action";
 import { GetVcsProviderRepositoriesRequestDto } from "../types/dto/get-vcs-provider-repositories-request.dto";
@@ -35,7 +35,7 @@ ${repositoriesList}
 
 🎉 Список репозиториев успешно получен!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { getVcsProvidersAction } from "../actions/get-vcs-providers.action";
 import { ToolNames } from "../types/tool-names.enum";
 
@@ -30,7 +30,7 @@ const handler = async () => {
 
     🎉 Список провайдеров успешно получен!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

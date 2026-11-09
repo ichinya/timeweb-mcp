@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteContainerRegistryAction } from "../actions/delete-container-registry.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { registry_id: number }) => {
       `✅ Реестр контейнеров ${params.registry_id} удалён.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

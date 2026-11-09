@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteBalancerRuleAction } from "../actions/delete-balancer-rule.action";
 
@@ -22,7 +22,7 @@ const handler = async (params: { balancer_id: number; rule_id: number }) => {
       `✅ Правило ${params.rule_id} удалено у балансировщика ${params.balancer_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

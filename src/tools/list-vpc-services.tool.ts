@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listVpcServicesAction } from "../actions/list-vpc-services.action";
 
@@ -25,7 +25,7 @@ const handler = async (params: { vpc_id: string }) => {
       `📋 Сервисы в VPC ${params.vpc_id} (всего: ${services.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { removeBalancerIpsAction } from "../actions/remove-balancer-ips.action";
 
@@ -25,7 +25,7 @@ const handler = async (params: { balancer_id: number; ips: string[] }) => {
       `✅ Удалено IP у балансировщика ${params.balancer_id} (${params.ips.length}):\n${params.ips.map((i) => `• ${i}`).join("\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

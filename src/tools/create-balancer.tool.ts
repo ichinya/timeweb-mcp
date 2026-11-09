@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createBalancerAction } from "../actions/create-balancer.action";
 import { CreateBalancerRequestDto } from "../types/dto/create-balancer-request.dto";
@@ -194,7 +194,7 @@ const handler = async (params: {
 • Preset: ${b.preset_id}
 • Создан: ${new Date(b.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

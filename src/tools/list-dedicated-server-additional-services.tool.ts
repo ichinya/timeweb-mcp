@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDedicatedServerAdditionalServicesAction } from "../actions/list-dedicated-server-additional-services.action";
 
@@ -33,7 +33,7 @@ const handler = async (params: { preset_id: number }) => {
       `Дополнительные услуги для тарифа ${params.preset_id} (${services.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

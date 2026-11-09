@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createDedicatedServerAction } from "../actions/create-dedicated-server.action";
 import { DedicatedServerPaymentPeriod } from "../types/dedicated-server.type";
@@ -121,7 +121,7 @@ const handler = async (params: {
 
 ⏳ Установка выделенного сервера может занять от нескольких минут до нескольких часов.`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

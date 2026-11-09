@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { refreshApiKeyAction } from "../actions/refresh-api-key.action";
 import { RefreshApiKeyRequestDto } from "../types/dto/refresh-api-key-request.dto";
@@ -39,7 +39,7 @@ Token: ${apiKey.token}
 • Имя: ${apiKey.name}
 • Истекает: ${expires}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

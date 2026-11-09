@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createImageAction } from "../actions/create-image.action";
 
@@ -59,7 +59,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.disk_id !== undefined && params.upload_url) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя указывать одновременно disk_id и upload_url. Выбери один способ: снапшот диска (disk_id) или импорт по ссылке (upload_url)."
       );
     }
@@ -77,7 +77,7 @@ const handler = async (params: {
       `✅ Образ создан: ID ${image.id}, имя "${image.name || "(без имени)"}", статус ${image.status} (progress ${image.progress}%). Процесс асинхронный — перепроверь статус через get_image.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

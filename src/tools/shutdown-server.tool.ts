@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { shutdownServerAction } from "../actions/shutdown-server.action";
 
@@ -17,7 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда мягкого выключения (ACPI shutdown) отправлена для сервера ${params.server_id}. Статус перейдёт в turning_off → off.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

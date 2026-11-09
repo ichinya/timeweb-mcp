@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getContainerRegistryAction } from "../actions/get-container-registry.action";
 
@@ -26,7 +26,7 @@ const handler = async (params: { registry_id: number }) => {
         `Обновлён: ${new Date(r.updated_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

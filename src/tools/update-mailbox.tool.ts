@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateMailboxAction } from "../actions/update-mailbox.action";
 
@@ -60,7 +60,7 @@ const handler = async (params: {
     );
 
     if (Object.keys(body).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно передать хотя бы одно поле для обновления."
       );
     }
@@ -77,7 +77,7 @@ const handler = async (params: {
 • Автоответчик: ${updated.autoreply_status ? "вкл" : "выкл"}
 • Пересылка исходящих: ${updated.outgoing_control ? "вкл" : "выкл"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

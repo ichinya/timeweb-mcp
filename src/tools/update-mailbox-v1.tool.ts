@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateMailboxV1Action } from "../actions/update-mailbox-v1.action";
 
@@ -47,7 +47,7 @@ const handler = async (params: {
       Object.entries(rest).filter(([, v]) => v !== undefined)
     );
     if (Object.keys(body).length === 0) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно передать хотя бы одно поле для обновления."
       );
     }
@@ -58,7 +58,7 @@ const handler = async (params: {
       `✅ Ящик ${mailbox}@${domain} обновлён (API v1). Комментарий: ${updated.comment || "—"}. Спам-фильтр: ${updated.spam_filter?.is_enabled ? "вкл" : "выкл"}. Автоответчик: ${updated.auto_reply?.is_enabled ? "вкл" : "выкл"}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

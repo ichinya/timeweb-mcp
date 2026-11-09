@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { addSubdomainAction } from "../actions/add-subdomain.action";
 
@@ -23,7 +23,7 @@ const handler = async (params: { fqdn: string; subdomain_fqdn: string }) => {
 • FQDN: ${sub.fqdn}
 • Привязанный IP: ${sub.linked_ip ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

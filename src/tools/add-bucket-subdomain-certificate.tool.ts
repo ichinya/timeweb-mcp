@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { addBucketSubdomainCertificateAction } from "../actions/add-bucket-subdomain-certificate.action";
 
@@ -20,7 +20,7 @@ const handler = async (params: { subdomain: string }) => {
       `✅ Запущен выпуск SSL-сертификата для поддомена '${params.subdomain}'.\n\nСтатус можно проверить через list_bucket_subdomains (поле status).`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createK8sNodeGroupAction } from "../actions/create-k8s-node-group.action";
 
@@ -69,12 +69,12 @@ const handler = async (params: {
 }) => {
   try {
     if (params.preset_id && params.configuration) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя одновременно указывать preset_id и configuration. Выбери одно."
       );
     }
     if (!params.preset_id && !params.configuration) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно указать либо preset_id, либо configuration для воркер-ноды."
       );
     }
@@ -95,7 +95,7 @@ const handler = async (params: {
       `✅ Группа нод создана: ID ${group.id}, ${group.name}, preset ${group.preset_id}, нод: ${group.node_count}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

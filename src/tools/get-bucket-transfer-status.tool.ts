@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getBucketTransferStatusAction } from "../actions/get-bucket-transfer-status.action";
 
@@ -23,7 +23,7 @@ const handler = async (params: { bucket_id: number }) => {
 • Всего объектов: ${s.total_count} (размер: ${s.total_size} байт)
 • Перенесено: ${s.uploaded_count} (размер: ${s.uploaded_size} байт)${errorsBlock}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

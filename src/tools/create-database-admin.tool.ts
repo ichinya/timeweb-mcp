@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createDatabaseAdminAction } from "../actions/create-database-admin.action";
 
@@ -84,7 +84,7 @@ const handler = async (params: {
     const admin = await createDatabaseAdminAction(db_cluster_id, data);
 
     if (!admin) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `⚠️ Запрос на создание пользователя "${params.login}" отправлен, но API не вернул объект.`
       );
     }
@@ -93,7 +93,7 @@ const handler = async (params: {
       `✅ Пользователь ${admin.login} (ID ${admin.id}) создан в кластере ${db_cluster_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

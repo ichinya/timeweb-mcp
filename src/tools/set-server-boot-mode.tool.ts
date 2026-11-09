@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { setServerBootModeAction } from "../actions/set-server-boot-mode.action";
 import { ServerBootMode } from "../api/servers";
@@ -21,7 +21,7 @@ const handler = async (params: {
   boot_mode: ServerBootMode;
 }) => {
   if (!BOOT_MODES.includes(params.boot_mode)) {
-    return createToolResponse(
+    return createToolErrorResponse(
       `❌ Неверный boot_mode: ${params.boot_mode}. Допустимые: ${BOOT_MODES.join(", ")}.`
     );
   }
@@ -33,7 +33,7 @@ const handler = async (params: {
         `Сервер будет перезагружен для применения изменения.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

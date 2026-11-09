@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateServerAction } from "../actions/update-server.action";
 import { UpdateServerRequestDto } from "../types/dto/update-server-request.dto";
@@ -30,7 +30,7 @@ const handler = async (params: {
   if (params.cloud_init !== undefined) body.cloud_init = params.cloud_init;
 
   if (Object.keys(body).length === 0) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужно передать хотя бы одно поле: name, comment, avatar_id или cloud_init."
     );
   }
@@ -44,7 +44,7 @@ const handler = async (params: {
         `• Статус: ${server.status}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createFloatingIpAction } from "../actions/create-floating-ip.action";
 import { AvailabilityZones } from "../types/availability-zones.enum";
@@ -24,7 +24,7 @@ const handler = async (params: {
     const availableZones = Object.values(AvailabilityZones);
 
     if (!availableZones.includes(params.availability_zone)) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Неверная зона доступности: ${params.availability_zone}. Выбери из списка: ${availableZones.join(", ")}`
       );
     }
@@ -35,7 +35,7 @@ const handler = async (params: {
     );
 
     if (!ip) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Не удалось создать floating IP в зоне "${params.availability_zone}"`
       );
     }
@@ -52,7 +52,7 @@ const handler = async (params: {
 
 🎉 Floating IP готов к использованию!`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

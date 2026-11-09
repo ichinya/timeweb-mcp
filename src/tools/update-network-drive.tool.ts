@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateNetworkDriveAction } from "../actions/update-network-drive.action";
 
@@ -30,7 +30,7 @@ const handler = async (params: {
       params.comment === undefined &&
       params.size === undefined
     ) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно указать хотя бы одно из полей для изменения: name, comment, size"
       );
     }
@@ -57,7 +57,7 @@ const handler = async (params: {
 • Статус: ${drive.status}
 • Комментарий: ${drive.comment ?? "—"}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

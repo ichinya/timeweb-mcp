@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createImageDownloadAction } from "../actions/create-image-download.action";
 
@@ -55,7 +55,7 @@ const handler = async (params: {
     const needsAuth =
       params.type === "google_drive" || params.type === "yandex";
     if (needsAuth && !params.access_token) {
-      return createToolResponse(
+      return createToolErrorResponse(
         `❌ Для типа ${params.type} необходим access_token.`
       );
     }
@@ -79,7 +79,7 @@ const handler = async (params: {
       `✅ Ссылка на скачивание создана: ID ${download.id}, тип ${download.type}, статус ${download.status} (progress ${download.progress}%). Отслеживай статус через get_image_download.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

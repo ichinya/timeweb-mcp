@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { setServerNatModeAction } from "../actions/set-server-nat-mode.action";
 import { ServerNatMode } from "../api/servers";
@@ -21,7 +21,7 @@ const handler = async (params: {
   nat_mode: ServerNatMode;
 }) => {
   if (!NAT_MODES.includes(params.nat_mode)) {
-    return createToolResponse(
+    return createToolErrorResponse(
       `❌ Неверный nat_mode: ${params.nat_mode}. Допустимые: ${NAT_MODES.join(", ")}.`
     );
   }
@@ -32,7 +32,7 @@ const handler = async (params: {
       `✅ NAT-режим сервера ${params.server_id} установлен: ${params.nat_mode}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

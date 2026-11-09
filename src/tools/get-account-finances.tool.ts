@@ -1,5 +1,5 @@
 import { formatRequestError } from "../exceptions/server.exception";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getAccountFinancesAction } from "../actions/get-account-finances.action";
 
@@ -20,7 +20,7 @@ const handler = async () => {
         `Автоплатёж: ${f.autopay_card_info ?? "не подключен"}`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

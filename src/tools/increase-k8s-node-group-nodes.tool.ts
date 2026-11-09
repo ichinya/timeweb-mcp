@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { increaseK8sNodeGroupNodesAction } from "../actions/increase-k8s-node-group-nodes.action";
 
@@ -34,7 +34,7 @@ const handler = async (params: {
       `✅ В группу ${params.group_id} кластера ${params.cluster_id} добавлено ${params.count} нод. Всего в ответе: ${nodes.length}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

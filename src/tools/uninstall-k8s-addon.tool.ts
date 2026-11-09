@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { uninstallK8sAddonAction } from "../actions/uninstall-k8s-addon.action";
 
@@ -19,7 +19,7 @@ const handler = async (params: { cluster_id: number; addon_id: number }) => {
       `✅ Дополнение ${params.addon_id} удалено из кластера ${params.cluster_id}.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

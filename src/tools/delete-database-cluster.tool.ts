@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { deleteDatabaseClusterAction } from "../actions/delete-database-cluster.action";
 
@@ -44,7 +44,7 @@ const handler = async (params: {
       `✅ Кластер ${params.db_cluster_id} удалён (или перемещён в карантин).`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

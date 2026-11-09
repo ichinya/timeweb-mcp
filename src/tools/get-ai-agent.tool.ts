@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getAiAgentAction } from "../actions/get-ai-agent.action";
 
@@ -38,7 +38,7 @@ const handler = async (params: { agent_id: number }) => {
 
     return createToolResponse(`📋 AI-агент ${a.id}:\n\n${linesBlock}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

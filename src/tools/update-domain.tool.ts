@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateDomainAction } from "../actions/update-domain.action";
 
@@ -27,7 +27,7 @@ const handler = async (params: {
       params.is_autoprolong_enabled === undefined &&
       params.linked_ip === undefined
     ) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нужно указать хотя бы одно из полей: is_autoprolong_enabled или linked_ip."
       );
     }
@@ -47,7 +47,7 @@ const handler = async (params: {
 • Автопродление: ${d.is_autoprolong_enabled ? "да" : "нет"}
 • Статус: ${d.domain_status}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

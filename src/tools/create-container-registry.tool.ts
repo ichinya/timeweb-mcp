@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createContainerRegistryAction } from "../actions/create-container-registry.action";
 
@@ -48,17 +48,17 @@ const handler = async (params: {
   project_id?: number;
 }) => {
   if (params.preset_id && params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нельзя передавать одновременно preset_id и configurator_id. Выбери один режим."
     );
   }
   if (!params.preset_id && !params.configurator_id) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ Нужен либо preset_id (готовый тариф), либо configurator_id (кастомная конфигурация)."
     );
   }
   if (params.configurator_id && !params.disk) {
-    return createToolResponse(
+    return createToolErrorResponse(
       "❌ При использовании configurator_id обязательно укажи disk (размер диска в ГБ)."
     );
   }
@@ -94,7 +94,7 @@ const handler = async (params: {
 • Диск: ${r.disk_stats.size} ГБ
 • Создан: ${new Date(r.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

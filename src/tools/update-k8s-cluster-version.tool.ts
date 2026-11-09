@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { updateK8sClusterVersionAction } from "../actions/update-k8s-cluster-version.action";
 
@@ -24,7 +24,7 @@ const handler = async (params: {
       `✅ Запрос на обновление версии кластера ${params.cluster_id} отправлен${params.k8s_version ? ` (целевая версия: ${params.k8s_version})` : ""}. Проверь статус через get_k8s_cluster.`
     );
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 

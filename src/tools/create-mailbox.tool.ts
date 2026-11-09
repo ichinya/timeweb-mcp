@@ -1,6 +1,6 @@
 import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
-import { createToolResponse } from "../utils";
+import { createToolResponse, createToolErrorResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { createMailboxAction } from "../actions/create-mailbox.action";
 
@@ -43,7 +43,7 @@ const handler = async (params: {
 }) => {
   try {
     if (params.filter_status === false && params.filter_action !== undefined) {
-      return createToolResponse(
+      return createToolErrorResponse(
         "❌ Нельзя передавать filter_action, если filter_status=false"
       );
     }
@@ -61,7 +61,7 @@ const handler = async (params: {
 • Комментарий: ${m.comment || "—"}
 • Спам-фильтр: ${m.filter_status ? "вкл" : "выкл"}${m.filter_status ? `, действие: ${m.filter_action}` : ""}`);
   } catch (error) {
-    return createToolResponse(formatRequestError(error));
+    return createToolErrorResponse(formatRequestError(error));
   }
 };
 
