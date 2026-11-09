@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -30,14 +31,7 @@ const handler = async (params: {
       `✅ SSH-ключи [${params.ssh_key_ids.join(", ")}] добавлены на сервер ${params.server_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось добавить SSH-ключи на сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при добавлении SSH-ключей на сервер"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

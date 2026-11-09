@@ -5,6 +5,8 @@ import * as tools from "./tools";
 import * as resources from "./resources";
 import * as prompts from "./prompts";
 import { getVersion } from "./utils";
+import { wrapRequestHandler } from "./api/request-context";
+import { formatRequestError } from "./exceptions/server.exception";
 
 const startServer = async () => {
   const server = new McpServer(
@@ -37,7 +39,7 @@ const startServer = async () => {
           openWorldHint: true,
         },
       },
-      tool.handler
+      wrapRequestHandler(tool.name, (...args: unknown[]) => tool.handler(...args))
     );
   });
 
@@ -53,7 +55,7 @@ const startServer = async () => {
         title: resource.title,
         description: resource.description,
       },
-      resource.handler
+      wrapRequestHandler(resource.name, (...args: unknown[]) => resource.handler(...args))
     );
   });
 
@@ -70,6 +72,6 @@ startServer()
     console.error("Timeweb MCP server started");
   })
   .catch((error) => {
-    console.error("Failed to start Timeweb MCP server:", error);
+    console.error("Failed to start Timeweb MCP server:", formatRequestError(error));
     process.exit(1);
   });

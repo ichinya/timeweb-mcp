@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -38,14 +39,7 @@ const handler = async (params: {
       `✅ Name-серверы домена ${params.fqdn} обновлены (записей: ${count}).\nСтатус задачи: ${groups[0]?.task_status ?? "—"}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления name-серверов "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении name-серверов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

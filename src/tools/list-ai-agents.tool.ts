@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listAiAgentsAction } from "../actions/list-ai-agents.action";
@@ -24,12 +25,7 @@ const handler = async () => {
       `AI-агенты (${agents.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка AI-агентов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении агентов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -28,12 +29,7 @@ const handler = async (params: {
       `✅ Из группы ${params.group_id} кластера ${params.cluster_id} удалено ${params.count} нод.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка уменьшения количества нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при уменьшении нод");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

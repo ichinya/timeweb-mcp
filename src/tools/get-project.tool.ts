@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -20,12 +21,7 @@ const handler = async (params: { project_id: number }) => {
         `• Аккаунт: ${p.account_id}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить проект ${params.project_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении проекта");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

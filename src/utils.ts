@@ -3,6 +3,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { DatabaseTypes } from "./types/database-types.enum";
 import { PresetDatabaseTypes } from "./types/preset-database-types.enum";
+import { formatRequestError } from "./exceptions/server.exception";
 
 export const getVersion = (): string => {
   try {
@@ -15,7 +16,7 @@ export const getVersion = (): string => {
 
     return packageJson.version;
   } catch (error) {
-    console.error("Failed to read package version:", error);
+    console.error("Failed to read package version:", formatRequestError(error));
     return "unknown";
   }
 };

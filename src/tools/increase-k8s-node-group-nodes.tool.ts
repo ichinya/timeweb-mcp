@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -33,12 +34,7 @@ const handler = async (params: {
       `✅ В группу ${params.group_id} кластера ${params.cluster_id} добавлено ${params.count} нод. Всего в ответе: ${nodes.length}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка увеличения количества нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при увеличении нод");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

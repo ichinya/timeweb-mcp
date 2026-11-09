@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listApiKeysAction } from "../actions/list-api-keys.action";
@@ -26,14 +27,7 @@ const handler = async () => {
       `📋 API-токены (всего: ${keys.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении списка API-токенов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении списка API-токенов`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

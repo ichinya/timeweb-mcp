@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { getDatabasePresetsAction } from "../actions/get-database-presets.action";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,14 +17,7 @@ const handler = async () => {
 
     return createToolResponse(response);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения пресетов баз данных. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении пресетов баз данных`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

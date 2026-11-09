@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -27,14 +28,7 @@ const handler = async (params: { group_id: string; rule_id: string }) => {
 • CIDR: ${r.cidr || "—"}
 • Описание: ${r.description || "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения правила ${params.rule_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении правила firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

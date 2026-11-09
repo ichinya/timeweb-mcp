@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -43,14 +44,7 @@ const handler = async (params: {
         `Статус: ${s.status}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить выделенный сервер ${params.dedicated_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении выделенного сервера"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

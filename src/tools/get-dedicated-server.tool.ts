@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -38,14 +39,7 @@ const handler = async (params: { dedicated_id: number }) => {
         `Создан: ${new Date(s.created_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения выделенного сервера ${params.dedicated_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении выделенного сервера"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

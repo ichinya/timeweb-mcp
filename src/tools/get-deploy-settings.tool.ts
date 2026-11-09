@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ToolNames } from "../types/tool-names.enum";
 import { createToolResponse } from "../utils";
 import { getDeploySettingsAction } from "../actions/get-deploy-settings.action";
@@ -21,15 +22,7 @@ ${deploySettings
 
     return createToolResponse(responseMessage);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении настроек деплоя. Причина: ${error.message}`
-      );
-    }
-
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении настроек деплоя.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

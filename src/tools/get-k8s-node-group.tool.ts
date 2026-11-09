@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -17,14 +18,7 @@ const handler = async (params: { cluster_id: number; group_id: number }) => {
 • Количество нод: ${g.node_count}
 • Создана: ${new Date(g.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения группы нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении группы нод"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

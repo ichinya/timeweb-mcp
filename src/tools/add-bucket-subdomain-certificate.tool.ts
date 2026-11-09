@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -19,14 +20,7 @@ const handler = async (params: { subdomain: string }) => {
       `✅ Запущен выпуск SSL-сертификата для поддомена '${params.subdomain}'.\n\nСтатус можно проверить через list_bucket_subdomains (поле status).`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка выпуска SSL-сертификата для '${params.subdomain}'. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при выпуске SSL-сертификата"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

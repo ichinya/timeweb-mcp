@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,12 +17,7 @@ const handler = async (params: { ssh_key_id: number }) => {
       `✅ SSH-ключ ${params.ssh_key_id} удалён из аккаунта.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить SSH-ключ ${params.ssh_key_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении SSH-ключа");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

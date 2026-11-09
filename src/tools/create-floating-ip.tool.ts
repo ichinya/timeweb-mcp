@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -51,12 +52,7 @@ const handler = async (params: {
 
 🎉 Floating IP готов к использованию!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания floating IP. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при создании floating IP`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

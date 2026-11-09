@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -39,12 +40,7 @@ const handler = async (params: {
       `✅ Дополнение ${params.type} v${params.version} установлено в кластер ${params.cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка установки дополнения. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при установке дополнения");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

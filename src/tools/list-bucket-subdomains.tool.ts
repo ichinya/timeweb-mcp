@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -26,14 +27,7 @@ const handler = async (params: { bucket_id: number }) => {
       `Поддомены хранилища ${params.bucket_id} (${subdomains.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения поддоменов хранилища ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении поддоменов хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

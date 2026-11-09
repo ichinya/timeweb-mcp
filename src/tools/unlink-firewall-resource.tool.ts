@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -33,14 +34,7 @@ const handler = async (params: {
       `✅ Ресурс ${params.resource_id} отвязан от группы firewall ${params.group_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось отвязать ресурс ${params.resource_id} от группы ${params.group_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при отвязке ресурса от группы firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

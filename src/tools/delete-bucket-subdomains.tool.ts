@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -29,14 +30,7 @@ const handler = async (params: {
       `✅ Результат удаления поддоменов из хранилища ${params.bucket_id}:\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления поддоменов из хранилища ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении поддоменов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

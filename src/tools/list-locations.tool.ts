@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listLocationsAction } from "../actions/list-locations.action";
@@ -21,12 +22,7 @@ const handler = async () => {
       `🌍 Локации (${locations.length}):\n\n${lines.join("\n")}\n\n💡 Используйте значение location при создании VPS (фильтр по локации для тарифов/конфигураторов) и availability_zone для выбора зоны.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения локаций. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении локаций");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

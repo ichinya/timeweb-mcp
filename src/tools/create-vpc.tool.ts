@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { createVpcAction } from "../actions/create-vpc.action";
@@ -67,12 +68,7 @@ const handler = async (params: {
 
 🎉 VPC готова к использованию!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания VPC. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при создании VPC`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -38,14 +39,7 @@ Token: ${apiKey.token}
 • Имя: ${apiKey.name}
 • Истекает: ${expires}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при перевыпуске API-токена. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при перевыпуске API-токена`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

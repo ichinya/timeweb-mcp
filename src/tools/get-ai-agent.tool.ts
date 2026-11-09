@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -37,12 +38,7 @@ const handler = async (params: { agent_id: number }) => {
 
     return createToolResponse(`📋 AI-агент ${a.id}:\n\n${linesBlock}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить агента ${params.agent_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении агента");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

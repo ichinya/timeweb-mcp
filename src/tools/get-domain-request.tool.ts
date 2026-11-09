@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -22,12 +23,7 @@ const handler = async (params: { request_id: number }) => {
 • Сообщение: ${r.message ?? "—"}
 • Auth code: ${r.auth_code ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения заявки ${params.request_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении заявки");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

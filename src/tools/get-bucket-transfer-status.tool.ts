@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -22,14 +23,7 @@ const handler = async (params: { bucket_id: number }) => {
 • Всего объектов: ${s.total_count} (размер: ${s.total_size} байт)
 • Перенесено: ${s.uploaded_count} (размер: ${s.uploaded_size} байт)${errorsBlock}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения статуса переноса хранилища ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении статуса переноса хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

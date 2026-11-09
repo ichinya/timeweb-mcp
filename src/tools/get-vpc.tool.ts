@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,12 +24,7 @@ const handler = async (params: { vpc_id: string }) => {
 • Занятые адреса: ${vpc.busy_address.length > 0 ? vpc.busy_address.join(", ") : "—"}
 • Создана: ${new Date(vpc.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении VPC. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при получении VPC`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

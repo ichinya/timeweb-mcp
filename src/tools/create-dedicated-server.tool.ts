@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -120,14 +121,7 @@ const handler = async (params: {
 
 ⏳ Установка выделенного сервера может занять от нескольких минут до нескольких часов.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать выделенный сервер. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании выделенного сервера"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

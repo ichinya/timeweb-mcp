@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -35,14 +36,7 @@ const handler = async (params: { limit?: number; offset?: number }) => {
       `Kubernetes-кластеры (${clusters.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка кластеров. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении кластеров"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

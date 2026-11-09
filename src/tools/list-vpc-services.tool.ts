@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -24,14 +25,7 @@ const handler = async (params: { vpc_id: string }) => {
       `📋 Сервисы в VPC ${params.vpc_id} (всего: ${services.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении сервисов VPC. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении сервисов VPC`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

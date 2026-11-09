@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -21,12 +22,7 @@ const handler = async (params: { fqdn: string }) => {
       `⚠️ Домен ${params.fqdn} уже занят — зарегистрировать нельзя.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка проверки домена "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при проверке домена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,12 +17,7 @@ const handler = async (params: { registry_id: number }) => {
       `✅ Реестр контейнеров ${params.registry_id} удалён.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить реестр ${params.registry_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении реестра");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

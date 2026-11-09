@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getBucketPresetsAction } from "../actions/get-bucket-presets.action";
@@ -21,14 +22,7 @@ const handler = async () => {
       `Тарифы S3-хранилищ (${presets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения тарифов S3-хранилищ. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении тарифов S3-хранилищ"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

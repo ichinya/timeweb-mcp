@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -34,14 +35,7 @@ ${repositoriesList}
 
 🎉 Список репозиториев успешно получен!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении списка репозиториев. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении списка репозиториев.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

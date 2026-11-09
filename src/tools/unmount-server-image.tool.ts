@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -14,14 +15,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ ISO-образ сервера ${params.server_id} отмонтирован. Сервер перезагружается для продолжения штатной работы.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось отмонтировать ISO сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при отмонтировании ISO"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

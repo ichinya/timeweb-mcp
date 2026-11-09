@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -35,14 +36,7 @@ const handler = async (params: {
 • Политика: ${g.policy}
 • Обновлена: ${new Date(g.updated_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления группы firewall ${params.group_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении группы firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

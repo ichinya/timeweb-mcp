@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listFloatingIpsAction } from "../actions/list-floating-ips.action";
@@ -26,14 +27,7 @@ const handler = async () => {
       `📋 Плавающие IP (всего: ${response.meta?.total ?? ips.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении списка плавающих IP. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении списка плавающих IP`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

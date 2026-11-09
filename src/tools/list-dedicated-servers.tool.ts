@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDedicatedServersAction } from "../actions/list-dedicated-servers.action";
@@ -21,14 +22,7 @@ const handler = async () => {
       `Выделенные серверы (${servers.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка выделенных серверов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении выделенных серверов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

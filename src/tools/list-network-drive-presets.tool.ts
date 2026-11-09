@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listNetworkDrivePresetsAction } from "../actions/list-network-drive-presets.action";
@@ -23,14 +24,7 @@ const handler = async () => {
       `📋 Тарифы сетевых дисков (${presets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка тарифов сетевых дисков. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении тарифов сетевых дисков"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

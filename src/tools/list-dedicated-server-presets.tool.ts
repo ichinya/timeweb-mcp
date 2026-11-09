@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -36,14 +37,7 @@ const handler = async (params: { location?: DedicatedServerLocation }) => {
       `Тарифы выделенных серверов${params.location ? ` (${params.location})` : ""} — всего ${presets.length}:\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения тарифов выделенных серверов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении тарифов выделенных серверов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -12,12 +13,7 @@ const handler = async (params: { token_id: string }) => {
     await deleteApiKeyAction(params.token_id);
     return createToolResponse(`✅ API-токен ${params.token_id} удалён.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при удалении API-токена. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при удалении API-токена`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -47,14 +48,7 @@ const handler = async (params: {
 • Вход: ${rule.balancer_proto}:${rule.balancer_port}
 • На backend: ${rule.server_proto}:${rule.server_port}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания правила для балансировщика ${params.balancer_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании правила балансировщика"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

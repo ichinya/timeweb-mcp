@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,14 +17,7 @@ const handler = async (params: { domain: string }) => {
 • Сборный адрес для ошибочных писем: ${info.email || "—"}
 • Использованное место: ${info.used} МБ`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения информации о домене. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении информации о домене"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

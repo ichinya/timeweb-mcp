@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -43,12 +44,7 @@ const handler = async (params: {
       `✅ Кластер ${params.db_cluster_id} удалён (или перемещён в карантин).`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить кластер ${params.db_cluster_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении кластера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

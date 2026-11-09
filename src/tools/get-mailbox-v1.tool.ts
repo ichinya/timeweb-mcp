@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -28,14 +29,7 @@ const handler = async (params: { domain: string; mailbox: string }) => {
 • Автоответчик: ${m.auto_reply?.is_enabled ? "вкл" : "выкл"}${m.auto_reply?.subject ? `, тема: "${m.auto_reply.subject}"` : ""}
 • Webmail: ${m.webmail ? "да" : "нет"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения ящика (v1). Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении ящика (v1)"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

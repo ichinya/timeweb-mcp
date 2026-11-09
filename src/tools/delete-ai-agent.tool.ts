@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -12,12 +13,7 @@ const handler = async (params: { agent_id: number }) => {
     await deleteAiAgentAction(params.agent_id);
     return createToolResponse(`✅ AI-агент ${params.agent_id} удалён.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить агента ${params.agent_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении агента");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

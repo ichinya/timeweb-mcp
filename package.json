@@ -11,8 +11,9 @@
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "type-check": "tsc --noEmit",
     "test:release": "node --test scripts/release-version.test.mjs",
+    "test:transport": "node scripts/test-transport.mjs",
     "smoke": "node scripts/smoke-start.mjs && node scripts/smoke-mcp.mjs",
-    "verify": "npm run validate:openapi && npm run test:release && npm run type-check && npm run build && npm run smoke",
+    "verify": "npm run validate:openapi && npm run test:release && npm run type-check && npm run test:transport && npm run build && npm run smoke",
     "normalize:openapi": "node scripts/normalize-openapi.mjs",
     "validate:openapi": "node scripts/validate-openapi.mjs"
   },

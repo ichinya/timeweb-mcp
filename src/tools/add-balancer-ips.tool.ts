@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -24,14 +25,7 @@ const handler = async (params: { balancer_id: number; ips: string[] }) => {
       `✅ Добавлено IP к балансировщику ${params.balancer_id} (${params.ips.length}):\n${params.ips.map((i) => `• ${i}`).join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка добавления IP к балансировщику ${params.balancer_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при добавлении IP к балансировщику"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

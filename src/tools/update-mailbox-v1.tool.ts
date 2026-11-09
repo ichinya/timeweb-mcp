@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -57,14 +58,7 @@ const handler = async (params: {
       `✅ Ящик ${mailbox}@${domain} обновлён (API v1). Комментарий: ${updated.comment || "—"}. Спам-фильтр: ${updated.spam_filter?.is_enabled ? "вкл" : "выкл"}. Автоответчик: ${updated.auto_reply?.is_enabled ? "вкл" : "выкл"}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления ящика (v1). Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении ящика (v1)"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

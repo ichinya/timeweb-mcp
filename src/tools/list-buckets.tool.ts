@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listBucketsAction } from "../actions/list-buckets.action";
@@ -24,14 +25,7 @@ const handler = async () => {
       `S3-хранилища (${buckets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка S3-хранилищ. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении S3-хранилищ"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

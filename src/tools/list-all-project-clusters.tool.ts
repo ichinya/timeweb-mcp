@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listAllProjectClustersAction } from "../actions/list-all-project-clusters.action";
@@ -18,12 +19,7 @@ const handler = async () => {
       `Все кластеры k8s аккаунта (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить кластеры. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении кластеров");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

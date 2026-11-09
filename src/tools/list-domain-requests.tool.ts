@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDomainRequestsAction } from "../actions/domain-requests.action";
@@ -17,12 +18,7 @@ const handler = async () => {
       `Заявки на домены (${requests.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка заявок. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении заявок");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

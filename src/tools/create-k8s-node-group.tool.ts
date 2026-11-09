@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -94,14 +95,7 @@ const handler = async (params: {
       `✅ Группа нод создана: ID ${group.id}, ${group.name}, preset ${group.preset_id}, нод: ${group.node_count}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания группы нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании группы нод"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

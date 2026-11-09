@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ResourceNames } from "../types/resource-names.enum";
 import { createResourceResponse } from "../utils";
@@ -21,14 +22,7 @@ export const getVpcsResource = {
 
       return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return createResourceResponse(
-          uri.href,
-          `Не удалось получить список VPC. Причина: ${error.message}`
-        );
-      }
-
-      return createResourceResponse(uri.href, `Не удалось получить список VPC`);
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

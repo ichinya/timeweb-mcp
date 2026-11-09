@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listProjectsAction } from "../actions/list-projects.action";
@@ -21,12 +22,7 @@ const handler = async () => {
       `Проекты (${projects.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка проектов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении проектов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

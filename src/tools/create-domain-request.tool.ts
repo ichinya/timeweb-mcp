@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -114,12 +115,7 @@ const handler = async (params: {
 
 Следующий шаг — оплатить или обновить заявку через update_domain_request.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания заявки на "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании заявки");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -25,14 +26,7 @@ const handler = async (params: { cluster_id: number }) => {
       `Установленные дополнения кластера ${params.cluster_id} (${addons.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения установленных дополнений. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении установленных дополнений"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

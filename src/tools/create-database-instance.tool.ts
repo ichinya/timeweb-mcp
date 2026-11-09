@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -36,12 +37,7 @@ const handler = async (params: {
       `✅ Инстанс ${i.name} (ID ${i.id}) создан в кластере ${db_cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать инстанс "${params.name}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании инстанса");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -18,12 +19,7 @@ const handler = async (params: { fqdn: string }) => {
       `✅ Домен ${params.fqdn} добавлен на аккаунт. Управление DNS/NS теперь доступно в Timeweb Cloud.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка добавления домена "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при добавлении домена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

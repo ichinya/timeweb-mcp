@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -20,12 +21,7 @@ const handler = async (params: {
       `✅ Ссылка на скачивание ${params.image_url_id} (образ ${params.image_id}) удалена.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить ссылку ${params.image_url_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении ссылки");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

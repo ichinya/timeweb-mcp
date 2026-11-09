@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -30,14 +31,7 @@ const handler = async (params: { balancer_id: number }) => {
 • Привязанные IP (${b.ips?.length ?? 0}): ${b.ips?.join(", ") || "—"}
 • Создан: ${new Date(b.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения балансировщика ${params.balancer_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении балансировщика"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

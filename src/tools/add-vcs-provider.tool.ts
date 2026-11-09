@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { AddVcsProviderRequestDto } from "../types/dto/add-vcs-provider-request.dto";
@@ -68,63 +69,7 @@ ${params.password ? `• Пароль/токен: ***` : ""}
 
 🎉 Провайдер готов к использованию для деплоя приложений!`);
   } catch (error) {
-    if (error instanceof Error) {
-      const errorMessage = error.message.toLowerCase();
-
-      if (
-        errorMessage.includes("unauthorized") ||
-        errorMessage.includes("403") ||
-        errorMessage.includes("401")
-      ) {
-        return createToolResponse(
-          `❌ ОШИБКА АВТОРИЗАЦИИ при добавлении VCS провайдера!
-
-🔍 Причина: Недостаточно прав доступа или неверные учетные данные
-
-💡 РЕШЕНИЕ: Проверьте правильность логина и токена/пароля
-
-🔄 НЕОБХОДИМО ПЕРЕЗАПРОСИТЬ ДАННЫЕ:
-• Логин (username)
-• Пароль/токен с необходимыми правами доступа
-
-Детали ошибки: ${error.message}`
-        );
-      }
-
-      if (
-        errorMessage.includes("repository not found") ||
-        errorMessage.includes("404") ||
-        errorMessage.includes("not found")
-      ) {
-        return createToolResponse(
-          `❌ РЕПОЗИТОРИЙ НЕ НАЙДЕН!
-
-🔍 Причина: Репозиторий не существует или недоступен
-
-💡 РЕШЕНИЕ:
-• Проверьте правильность URL репозитория
-• Убедитесь, что репозиторий существует
-• Проверьте права доступа к репозиторию
-
-Текущий URL: ${params.url}`
-        );
-      }
-
-      return createToolResponse(
-        `❌ Ошибка при добавлении VCS провайдера!
-
-🔍 Детали ошибки: ${error.message}
-
-💡 Для приватных репозиториев убедитесь, что:
-• Указан корректный логин
-• Указан валидный токен/пароль с правами доступа
-• Токен имеет необходимые scope (repo, read/write)`
-      );
-    }
-
-    return createToolResponse(
-      `❌ Неизвестная ошибка при добавлении VCS провайдера. Попробуйте еще раз.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

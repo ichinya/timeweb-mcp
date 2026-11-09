@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -28,12 +29,7 @@ const handler = async (params: {
         `• PTR: ${ip.ptr}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить PTR для IP ${params.ip}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении PTR");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

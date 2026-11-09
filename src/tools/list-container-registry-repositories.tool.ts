@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -32,14 +33,7 @@ const handler = async (params: { registry_id: number }) => {
       `Репозитории реестра ${params.registry_id} (${repos.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения репозиториев реестра ${params.registry_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении репозиториев"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

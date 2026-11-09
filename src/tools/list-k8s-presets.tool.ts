@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listK8sPresetsAction } from "../actions/list-k8s-presets.action";
@@ -20,12 +21,7 @@ const handler = async () => {
       `Тарифы Kubernetes (${presets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения тарифов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении тарифов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

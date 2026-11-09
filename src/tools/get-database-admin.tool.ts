@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -41,12 +42,7 @@ ${(a.instances ?? [])
   .join("\n") || "  —"}
 • Создан: ${new Date(a.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения пользователя ${params.admin_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении пользователя");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

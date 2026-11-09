@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -29,12 +30,7 @@ const handler = async (params: {
       `✅ Бэкап создан: ID ${backup.id}, имя "${backup.name}", статус: ${backup.status}. Процесс снятия бэкапа идёт асинхронно — повторно проверь статус через list_server_disk_backups.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать бэкап. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании бэкапа");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

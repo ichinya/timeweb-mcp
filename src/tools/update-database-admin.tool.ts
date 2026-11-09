@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -85,12 +86,7 @@ const handler = async (params: {
       `✅ Пользователь ${a.login} (ID ${a.id}) в кластере ${db_cluster_id} обновлён.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить пользователя ${params.admin_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении пользователя");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

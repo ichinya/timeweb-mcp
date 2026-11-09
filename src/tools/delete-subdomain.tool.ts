@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -19,12 +20,7 @@ const handler = async (params: { fqdn: string; subdomain_fqdn: string }) => {
       `✅ Поддомен ${params.subdomain_fqdn} удалён для домена ${params.fqdn}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления поддомена "${params.subdomain_fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении поддомена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

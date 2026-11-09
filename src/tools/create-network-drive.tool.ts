@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -48,14 +49,7 @@ const handler = async (params: {
 
 🎉 Диск готов к подключению (используй mount_network_drive).`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания сетевого диска. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании сетевого диска"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

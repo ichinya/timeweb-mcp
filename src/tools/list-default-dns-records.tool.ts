@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,14 +24,7 @@ const handler = async (params: { fqdn: string }) => {
       `DNS-записи по умолчанию для ${params.fqdn} (${records.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения DNS-записей по умолчанию для "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении DNS-записей по умолчанию"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

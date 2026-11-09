@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,12 +24,7 @@ const handler = async (params: {
       `✅ Запрос на обновление версии кластера ${params.cluster_id} отправлен${params.k8s_version ? ` (целевая версия: ${params.k8s_version})` : ""}. Проверь статус через get_k8s_cluster.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления версии кластера. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении версии");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

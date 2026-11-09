@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listK8sVersionsAction } from "../actions/list-k8s-versions.action";
@@ -14,12 +15,7 @@ const handler = async () => {
       `Доступные версии Kubernetes (${versions.length}):\n${versions.map((v) => `• ${v}`).join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения версий. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении версий");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

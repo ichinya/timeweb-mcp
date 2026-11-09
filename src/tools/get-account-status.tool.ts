@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getAccountStatusAction } from "../actions/get-account-status.action";
@@ -18,12 +19,7 @@ const handler = async () => {
           : "")
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить статус аккаунта. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении статуса");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -17,12 +18,7 @@ const handler = async (params: { server_id: number }) => {
         `Новый пароль root придёт на email, привязанный к аккаунту.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось сбросить пароль сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при сбросе пароля");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

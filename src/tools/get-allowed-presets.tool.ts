@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ToolNames } from "../types/tool-names.enum";
 import { createToolResponse } from "../utils";
 import { getAllowedPresetsAction } from "../actions/get-allowed-presets.action";
@@ -39,13 +40,7 @@ ${
 
     return createToolResponse(responseMessage);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении пресетов. Причина: ${error.message}`
-      );
-    }
-
-    return createToolResponse(`❌ Неизвестная ошибка при получении пресетов.`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

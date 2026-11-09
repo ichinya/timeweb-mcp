@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -30,14 +31,7 @@ const handler = async (params: { tld_id: number }) => {
 Доступные периоды:
 ${periods}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения доменной зоны ${params.tld_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении доменной зоны"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

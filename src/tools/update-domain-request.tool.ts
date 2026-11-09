@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -106,12 +107,7 @@ const handler = async (params: {
 • Источник оплаты: ${r.money_source ?? params.money_source}
 • Сообщение: ${r.message ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления заявки ${params.request_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении заявки");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

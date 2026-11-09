@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -36,12 +37,7 @@ const handler = async (params: {
       `✅ Образ ${image.id} обновлён. Имя: "${image.name || "(без имени)"}", описание: "${image.description || "—"}".`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить образ ${params.image_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении образа");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

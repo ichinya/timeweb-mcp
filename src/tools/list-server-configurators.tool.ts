@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerConfiguratorsAction } from "../actions/list-server-configurators.action";
@@ -32,14 +33,7 @@ const handler = async () => {
       `⚙️ Конфигураторы VPS (${configurators.length}):\n\n${lines.join("\n\n")}\n\n💡 Используйте ID в поле configurator.configurator_id при создании/изменении VPS с произвольной конфигурацией.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения конфигураторов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении конфигураторов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

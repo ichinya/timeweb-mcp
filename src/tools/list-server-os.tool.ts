@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerOsAction } from "../actions/list-server-os.action";
@@ -28,12 +29,7 @@ const handler = async () => {
       `💿 Операционные системы (${oses.length}):\n\n${lines.join("\n")}\n\n💡 Используйте ID при создании VPS в поле os_id.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка ОС. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении списка ОС");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

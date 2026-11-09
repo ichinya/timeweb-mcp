@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -27,12 +28,7 @@ const handler = async (params: { server_id: number }) => {
         `Комментарий: ${server.comment || "—"}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении сервера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -18,12 +19,7 @@ const handler = async (params: { cluster_id: number; node_id: number }) => {
       `✅ Нода ${params.node_id} удалена из кластера ${params.cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления ноды. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении ноды");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

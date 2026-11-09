@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -50,12 +51,7 @@ const handler = async (params: {
         `• ID связи: ${r.id}, создан: ${new Date(r.created_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось перенести ресурс ${params.resource_id} (${params.resource_type}). Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при переносе ресурса");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

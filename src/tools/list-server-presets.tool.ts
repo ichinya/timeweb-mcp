@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerPresetsAction } from "../actions/list-server-presets.action";
@@ -28,12 +29,7 @@ const handler = async () => {
       `📋 Тарифы VPS-серверов (${presets.length}):\n\n${lines.join("\n\n")}\n\n💡 Используйте ID тарифа при создании сервера в поле preset_id.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения тарифов серверов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении тарифов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -17,12 +18,7 @@ const handler = async (params: { fqdn: string; record_id: number }) => {
       `✅ DNS-запись ${params.record_id} удалена для домена ${params.fqdn}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления DNS-записи ${params.record_id} для "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении DNS-записи");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -24,12 +25,7 @@ const handler = async (params: { ssh_key_id: number }) => {
 • Используется на серверах: ${usedBy}
 • Тело ключа: ${key.body}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения SSH-ключа ${params.ssh_key_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении SSH-ключа");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

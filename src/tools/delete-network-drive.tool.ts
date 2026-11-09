@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,14 +17,7 @@ const handler = async (params: { network_drive_id: string }) => {
       `✅ Сетевой диск ${params.network_drive_id} удалён. Данные на диске восстановить нельзя.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить сетевой диск ${params.network_drive_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении сетевого диска"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

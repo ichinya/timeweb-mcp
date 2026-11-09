@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -34,12 +35,7 @@ const handler = async (params: {
 • Адрес: ${fullAddress}
 • Комментарий: ${m.comment || "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания почтового ящика (v1). Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании ящика (v1)");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

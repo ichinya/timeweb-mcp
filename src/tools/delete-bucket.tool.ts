@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -47,14 +48,7 @@ const handler = async (params: {
       `✅ S3-хранилище ${params.bucket_id} ${movedMsg}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить S3-хранилище ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении S3-хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

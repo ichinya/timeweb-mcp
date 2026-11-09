@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -78,14 +79,7 @@ const handler = async (params: {
       `✅ Ссылка на скачивание создана: ID ${download.id}, тип ${download.type}, статус ${download.status} (progress ${download.progress}%). Отслеживай статус через get_image_download.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать ссылку на скачивание. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании ссылки на скачивание"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

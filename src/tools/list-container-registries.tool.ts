@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listContainerRegistriesAction } from "../actions/list-container-registries.action";
@@ -21,14 +22,7 @@ const handler = async () => {
       `Реестры контейнеров (${registries.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка реестров контейнеров. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении реестров контейнеров"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

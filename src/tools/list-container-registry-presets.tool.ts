@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listContainerRegistryPresetsAction } from "../actions/list-container-registry-presets.action";
@@ -21,14 +22,7 @@ const handler = async () => {
       `Тарифы реестров контейнеров (${presets.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения тарифов реестров. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении тарифов реестров"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

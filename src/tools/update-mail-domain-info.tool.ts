@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -20,14 +21,7 @@ const handler = async (params: { domain: string; email: string }) => {
       `✅ Почтовая информация домена ${params.domain} обновлена. Сборщик: ${info.email}, использовано: ${info.used} МБ.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления почтовой информации. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении почтовой информации"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

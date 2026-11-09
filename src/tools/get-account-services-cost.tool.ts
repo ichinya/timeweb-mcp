@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getAccountServicesCostAction } from "../actions/get-account-services-cost.action";
@@ -41,12 +42,7 @@ const handler = async () => {
         `Топ-10 самых дорогих:\n${top.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить стоимость сервисов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

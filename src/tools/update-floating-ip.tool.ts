@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -42,14 +43,7 @@ const handler = async (params: {
 • Комментарий: ${ip.comment ?? "—"}
 • PTR: ${ip.ptr ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при обновлении плавающего IP. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при обновлении плавающего IP`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

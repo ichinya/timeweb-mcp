@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getAllowedPresetsAction } from "../actions/get-allowed-presets.action";
 import { ResourceNames } from "../types/resource-names.enum";
@@ -20,17 +21,7 @@ export const allowedPresetsResource = {
 
       return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return createResourceResponse(
-          uri.href,
-          `Не удалось получить список пресетов. Причина: ${error.message}`
-        );
-      }
-
-      return createResourceResponse(
-        uri.href,
-        `Не удалось получить список пресетов`
-      );
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

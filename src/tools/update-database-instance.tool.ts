@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -43,12 +44,7 @@ const handler = async (params: {
       `✅ Инстанс ${i.id} (${i.name}) в кластере ${db_cluster_id} обновлён.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить инстанс ${params.instance_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении инстанса");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

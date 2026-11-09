@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse, getPresetDatabaseType } from "../utils";
 import { createDatabaseAction } from "../actions/create-database.action";
@@ -147,12 +148,7 @@ const handler = async (params: {
 ДАННЫЕ ДЛЯ ПОДКЛЮЧЕНИЯ К БАЗЕ ДАННЫХ БУДУТ ДОСТУПНЫ ПОСЛЕ СОЗДАНИЯ В ПАНЕЛИ УПРАВЛЕНИЯ TIMEWEB CLOUD
 🎉 База данных скоро будет готова к использованию!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания базы данных. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при создании базы данных`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

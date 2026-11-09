@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -28,12 +29,7 @@ const handler = async (params: {
         `• Основной: ${ip.is_main ? "да" : "нет"}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось добавить IP на сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при добавлении IP");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

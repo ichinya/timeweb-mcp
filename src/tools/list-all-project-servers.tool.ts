@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listAllProjectServersAction } from "../actions/list-all-project-servers.action";
@@ -18,12 +19,7 @@ const handler = async () => {
       `Все серверы аккаунта (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить серверы. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении серверов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listNetworkDrivesAction } from "../actions/list-network-drives.action";
@@ -26,14 +27,7 @@ const handler = async () => {
       `Сетевые диски (${drives.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка сетевых дисков. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении сетевых дисков"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

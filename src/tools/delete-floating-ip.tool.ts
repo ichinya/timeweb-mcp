@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,14 +17,7 @@ const handler = async (params: { floating_ip_id: string }) => {
       `✅ Плавающий IP ${params.floating_ip_id} удалён.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при удалении плавающего IP. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при удалении плавающего IP`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

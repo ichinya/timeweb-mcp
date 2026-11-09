@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -12,12 +13,7 @@ const handler = async (params: { vpc_id: string }) => {
     await deleteVpcAction(params.vpc_id);
     return createToolResponse(`✅ VPC ${params.vpc_id} удалена.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при удалении VPC. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при удалении VPC`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

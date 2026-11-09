@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { getVcsProvidersAction } from "../actions/get-vcs-providers.action";
 import { ToolNames } from "../types/tool-names.enum";
@@ -29,15 +30,7 @@ const handler = async () => {
 
     🎉 Список провайдеров успешно получен!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении списка VCS провайдеров. Причина: ${error.message}`
-      );
-    }
-
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении списка VCS провайдеров.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

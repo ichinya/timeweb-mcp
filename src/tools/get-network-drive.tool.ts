@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -32,14 +33,7 @@ const handler = async (params: { network_drive_id: string }) => {
 • Подключения: ${services}
 • Комментарий: ${drive.comment ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения сетевого диска ${params.network_drive_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении сетевого диска"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -66,14 +67,7 @@ const handler = async (params: {
 • Значение: ${record.data.value ?? "—"}
 • TTL: ${record.ttl ?? "default"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления DNS-записи ${params.record_id} для "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении DNS-записи"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

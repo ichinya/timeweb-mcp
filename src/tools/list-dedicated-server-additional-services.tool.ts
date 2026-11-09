@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -32,14 +33,7 @@ const handler = async (params: { preset_id: number }) => {
       `Дополнительные услуги для тарифа ${params.preset_id} (${services.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения дополнительных услуг для тарифа ${params.preset_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении дополнительных услуг"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

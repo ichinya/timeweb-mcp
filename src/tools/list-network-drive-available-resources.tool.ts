@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listNetworkDriveAvailableResourcesAction } from "../actions/list-network-drive-available-resources.action";
@@ -23,14 +24,7 @@ const handler = async () => {
       `📋 Сервисы, доступные для подключения сетевого диска (${resources.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка доступных сервисов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении доступных сервисов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

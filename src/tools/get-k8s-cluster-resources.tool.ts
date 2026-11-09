@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -20,12 +21,7 @@ const handler = async (params: { cluster_id: number }) => {
 • Memory: ${fmt(r.memory)}
 • Pods: ${fmt(r.pods)}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения ресурсов кластера. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении ресурсов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

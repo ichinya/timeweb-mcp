@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -27,14 +28,7 @@ const handler = async (params: { group_id: string }) => {
       `🔗 Ресурсы, привязанные к группе ${params.group_id} (${resources.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения ресурсов группы firewall ${params.group_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении ресурсов группы firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

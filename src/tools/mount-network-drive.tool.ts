@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -34,14 +35,7 @@ const handler = async (params: {
       `✅ Сетевой диск ${params.network_drive_id} подключён к ${params.resource_type}#${params.resource_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось подключить сетевой диск ${params.network_drive_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при подключении сетевого диска"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

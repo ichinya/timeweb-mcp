@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -48,14 +49,7 @@ const handler = async (params: {
       `Ссылки на скачивание образа ${params.image_id} (${downloads.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить ссылки на скачивание. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении ссылок на скачивание"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

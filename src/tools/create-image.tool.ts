@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -76,12 +77,7 @@ const handler = async (params: {
       `✅ Образ создан: ID ${image.id}, имя "${image.name || "(без имени)"}", статус ${image.status} (progress ${image.progress}%). Процесс асинхронный — перепроверь статус через get_image.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать образ. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании образа");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

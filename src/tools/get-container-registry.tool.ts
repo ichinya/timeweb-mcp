@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -25,12 +26,7 @@ const handler = async (params: { registry_id: number }) => {
         `Обновлён: ${new Date(r.updated_at).toLocaleString("ru-RU")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения реестра ${params.registry_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении реестра");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

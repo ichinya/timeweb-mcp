@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getVcsProvidersAction } from "../actions/get-vcs-providers.action";
 import { ResourceNames } from "../types/resource-names.enum";
@@ -22,17 +23,7 @@ export const vcsProvidersResource = {
 
       return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return createResourceResponse(
-          uri.href,
-          `Не удалось получить список VCS провайдеров. Причина: ${error.message}`
-        );
-      }
-
-      return createResourceResponse(
-        uri.href,
-        `Не удалось получить список VCS провайдеров`
-      );
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

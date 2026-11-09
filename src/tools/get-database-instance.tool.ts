@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -32,12 +33,7 @@ const handler = async (params: {
 • Описание: ${i.description || "—"}
 • Создан: ${new Date(i.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения инстанса ${params.instance_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении инстанса");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

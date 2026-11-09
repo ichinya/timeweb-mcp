@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -14,14 +15,7 @@ const handler = async (params: { cluster_id: number }) => {
       `✅ Kubeconfig кластера ${params.cluster_id}:\n\n${config}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения kubeconfig. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении kubeconfig"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

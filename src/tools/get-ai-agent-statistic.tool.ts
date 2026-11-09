@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -57,14 +58,7 @@ const handler = async (params: {
 
 ${lines.join("\n")}${more}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить статистику агента ${params.agent_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении статистики агента"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listAllProjectBucketsAction } from "../actions/list-all-project-buckets.action";
@@ -18,12 +19,7 @@ const handler = async () => {
       `Все хранилища аккаунта (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить хранилища. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении хранилищ");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

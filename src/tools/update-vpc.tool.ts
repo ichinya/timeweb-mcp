@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -33,12 +34,7 @@ const handler = async (params: {
 • Название: ${vpc.name}
 • Описание: ${vpc.description ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при обновлении VPC. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при обновлении VPC`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -36,14 +37,7 @@ const handler = async (params: { bucket_id: number }) => {
 • В карантине с: ${b.moved_in_quarantine_at ? new Date(b.moved_in_quarantine_at).toLocaleString("ru-RU") : "—"}
 • Website config: ${b.website_config?.enabled ? "включён" : "выключен"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения S3-хранилища ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении S3-хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

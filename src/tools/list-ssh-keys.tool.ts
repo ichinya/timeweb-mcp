@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listSshKeysAction } from "../actions/list-ssh-keys.action";
@@ -25,14 +26,7 @@ const handler = async () => {
       `SSH-ключи (${keys.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка SSH-ключей. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении списка SSH-ключей"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,12 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда принудительной перезагрузки отправлена для сервера ${params.server_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось принудительно перезагрузить сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

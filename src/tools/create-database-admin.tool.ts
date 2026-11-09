@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -92,12 +93,7 @@ const handler = async (params: {
       `✅ Пользователь ${admin.login} (ID ${admin.id}) создан в кластере ${db_cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать пользователя "${params.login}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании пользователя");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

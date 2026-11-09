@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -27,12 +28,7 @@ const handler = async (params: { cluster_id: number }) => {
 • Проект: ${c.project_id ?? "—"}
 • Создан: ${new Date(c.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения кластера ${params.cluster_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении кластера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

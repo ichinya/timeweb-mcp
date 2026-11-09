@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listK8sNetworkDriversAction } from "../actions/list-k8s-network-drivers.action";
@@ -14,14 +15,7 @@ const handler = async () => {
       `Сетевые драйверы Kubernetes (${drivers.length}):\n${drivers.map((d) => `• ${d}`).join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения сетевых драйверов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении сетевых драйверов"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

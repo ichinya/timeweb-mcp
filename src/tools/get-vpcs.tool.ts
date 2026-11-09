@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { getVpcsAction } from "../actions/get-vpcs.action";
 import { ToolNames } from "../types/tool-names.enum";
@@ -20,15 +21,7 @@ const handler = async () => {
 
     🎉 Список VPC успешно получен!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при получении списка VPC. Причина: ${error.message}`
-      );
-    }
-
-    return createToolResponse(
-      `❌ Неизвестная ошибка при получении списка VPC.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

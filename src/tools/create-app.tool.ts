@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { AppTypes } from "../types/app-types.enum";
 import {
@@ -258,12 +259,7 @@ ${
 ОБЯЗАТЕЛЬНО УВЕДОМИ ПОЛЬЗОВАТЕЛЯ, что перед использованием приложения необходимо вручную настроить переменные окружения в панели управления Timeweb Cloud, так как у чатбота нет доступа к файлу .env вашего проекта.
 🎉 Приложение скоро будет готово к использованию!`);
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания приложения. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(`❌ Неизвестная ошибка при создании приложения`);
+    return createToolResponse(formatRequestError(error));
   }
 };
 

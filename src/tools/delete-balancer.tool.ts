@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -46,14 +47,7 @@ const handler = async (params: {
       `✅ Балансировщик ${params.balancer_id} удалён.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить балансировщик ${params.balancer_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении балансировщика"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

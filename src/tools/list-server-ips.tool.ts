@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,12 +24,7 @@ const handler = async (params: { server_id: number }) => {
       `IP-адреса сервера ${params.server_id} (${ips.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить список IP сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении IP");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

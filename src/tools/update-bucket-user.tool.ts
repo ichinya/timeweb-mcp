@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -30,14 +31,7 @@ const handler = async (params: { user_id: number; secret_key: string }) => {
 
 ⚠️ Обнови конфигурацию всех клиентов, подключающихся к хранилищу.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления пароля пользователя ${params.user_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении пароля пользователя"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

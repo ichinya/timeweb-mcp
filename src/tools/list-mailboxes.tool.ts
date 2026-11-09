@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listMailboxesAction } from "../actions/list-mailboxes.action";
@@ -21,14 +22,7 @@ const handler = async () => {
       `Почтовые ящики (${mailboxes.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка почтовых ящиков. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении списка почтовых ящиков"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

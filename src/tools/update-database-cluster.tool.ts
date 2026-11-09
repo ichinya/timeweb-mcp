@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -48,12 +49,7 @@ const handler = async (params: {
       `✅ Кластер ${c.id} (${c.name}) обновлён. Статус: ${c.status}, пресет: ${c.preset_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить кластер ${params.db_cluster_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении кластера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

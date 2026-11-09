@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listAllProjectBalancersAction } from "../actions/list-all-project-balancers.action";
@@ -18,14 +19,7 @@ const handler = async () => {
       `Все балансировщики аккаунта (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить балансировщики. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении балансировщиков"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

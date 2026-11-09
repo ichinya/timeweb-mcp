@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -86,12 +87,7 @@ const handler = async (params: {
 • Статус: ${agent.status}
 • Тип доступа: ${agent.access_type}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить агента ${params.agent_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении агента");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

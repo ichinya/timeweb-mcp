@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -102,12 +103,7 @@ const handler = async (params: {
 • TTL: ${record.ttl ?? "default"}
 ${record.data.subdomain ? `• Поддомен: ${record.data.subdomain}\n` : ""}${record.data.priority !== undefined ? `• Приоритет: ${record.data.priority}` : ""}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания DNS-записи для "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании DNS-записи");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -29,14 +30,7 @@ const handler = async (params: { balancer_id: number }) => {
       `Правила балансировщика ${params.balancer_id} (${rules.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения правил балансировщика ${params.balancer_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении правил балансировщика"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

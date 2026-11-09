@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -101,14 +102,7 @@ const handler = async (params: {
 
 🎉 Хранилище готово к использованию!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания S3-хранилища. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании S3-хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

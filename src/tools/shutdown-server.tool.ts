@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,12 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда мягкого выключения (ACPI shutdown) отправлена для сервера ${params.server_id}. Статус перейдёт в turning_off → off.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось выключить сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при выключении сервера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

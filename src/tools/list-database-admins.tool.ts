@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -30,14 +31,7 @@ const handler = async (params: { db_cluster_id: number }) => {
       `Пользователи кластера ${params.db_cluster_id} (${admins.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения пользователей кластера ${params.db_cluster_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении пользователей кластера"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

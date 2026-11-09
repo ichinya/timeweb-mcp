@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,12 +24,7 @@ const handler = async (params: { project_id: number }) => {
       `Kubernetes-кластеры проекта ${params.project_id} (${items.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить кластеры. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении кластеров");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

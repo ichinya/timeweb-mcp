@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -28,14 +29,7 @@ const handler = async (params: { domain: string }) => {
       `Почтовые ящики домена ${params.domain} (${mailboxes.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения ящиков домена. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении ящиков домена"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

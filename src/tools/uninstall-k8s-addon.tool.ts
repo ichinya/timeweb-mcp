@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -18,14 +19,7 @@ const handler = async (params: { cluster_id: number; addon_id: number }) => {
       `✅ Дополнение ${params.addon_id} удалено из кластера ${params.cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления дополнения. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении дополнения"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

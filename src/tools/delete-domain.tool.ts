@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -14,12 +15,7 @@ const handler = async (params: { fqdn: string }) => {
     await deleteDomainAction(params.fqdn);
     return createToolResponse(`✅ Домен ${params.fqdn} удалён с аккаунта.`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления домена "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении домена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

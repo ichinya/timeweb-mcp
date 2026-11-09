@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -58,14 +59,7 @@ const handler = async (params: {
       `✅ Массовое создание завершено. Создано: ${batch.mailboxes.length}\n${createdLines.join("\n")}${errorsBlock}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка массового создания ящиков. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при массовом создании ящиков"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

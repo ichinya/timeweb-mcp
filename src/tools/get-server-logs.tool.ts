@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -40,12 +41,7 @@ const handler = async (params: {
       `Логи сервера ${params.server_id} (${logs.length} событий):\n\n${lines.join("\n")}${suffix}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить логи сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении логов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

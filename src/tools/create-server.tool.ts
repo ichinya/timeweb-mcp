@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -83,7 +84,7 @@ const inputSchema = {
     .describe("Cloud-init скрипт (опц.)"),
 };
 
-const handler = async (params: {
+export const createServerHandler = (create: typeof createServerAction = createServerAction) => async (params: {
   name: string;
   preset_id?: number;
   configurator_id?: number;
@@ -170,7 +171,7 @@ const handler = async (params: {
     if (params.hostname !== undefined) body.hostname = params.hostname;
     if (params.cloud_init !== undefined) body.cloud_init = params.cloud_init;
 
-    const server = await createServerAction(body);
+    const server = await create(body);
 
     return createToolResponse(
       `✅ Сервер создан.\n\n` +
@@ -185,12 +186,7 @@ const handler = async (params: {
         `ℹ️ Создание занимает несколько минут. Проверь статус через get_server.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать сервер. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании сервера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 
@@ -200,5 +196,5 @@ export const createServerTool = {
   description:
     "Создаёт новый облачный сервер. Выбор режима: preset_id XOR configurator_id (+cpu/ram/disk/[gpu]). Выбор ОС: os_id XOR image_id. Поддерживает ssh_keys_ids, is_ddos_guard, bandwidth, availability_zone, project_id, hostname, cloud_init.",
   inputSchema,
-  handler,
+  handler: createServerHandler(),
 };

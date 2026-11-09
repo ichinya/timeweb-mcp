@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -56,14 +57,7 @@ const handler = async (params: {
 • Статус: ${drive.status}
 • Комментарий: ${drive.comment ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления сетевого диска ${params.network_drive_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении сетевого диска"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

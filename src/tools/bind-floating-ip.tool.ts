@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -46,14 +47,7 @@ const handler = async (params: {
       `✅ Плавающий IP ${params.floating_ip_id} привязан к ${params.resource_type} #${params.resource_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при привязке плавающего IP. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при привязке плавающего IP`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

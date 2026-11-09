@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -41,14 +42,7 @@ const handler = async (params: {
 • Имя: ${apiKey.name}
 • Удаление сервисов: ${apiKey.is_able_to_delete ? "✅ разрешено" : "❌ запрещено"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при обновлении API-токена. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      `❌ Неизвестная ошибка при обновлении API-токена`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -18,14 +19,7 @@ const handler = async (params: { cluster_id: number; group_id: number }) => {
       `✅ Группа нод ${params.group_id} удалена из кластера ${params.cluster_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка удаления группы нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при удалении группы нод"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

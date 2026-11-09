@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listDomainsAction } from "../actions/list-domains.action";
@@ -21,12 +22,7 @@ const handler = async () => {
       `Домены (${domains.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка доменов. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении доменов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

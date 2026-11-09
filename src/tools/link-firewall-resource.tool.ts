@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -33,14 +34,7 @@ const handler = async (params: {
       `✅ Ресурс ${r.type} #${r.id} привязан к группе firewall ${params.group_id}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось привязать ресурс ${params.resource_id} к группе ${params.group_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при привязке ресурса к группе firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

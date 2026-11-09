@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { getDatabasePresetsAction } from "../actions/get-database-presets.action";
 import { ResourceNames } from "../types/resource-names.enum";
 import { createResourceResponse } from "../utils";
@@ -24,12 +25,7 @@ export const databasePresetsResource = {
         `📊 **Пресеты баз данных Timeweb Cloud**\n\n${JSON.stringify(presets, null, 2)}`
       );
     } catch (error) {
-      return createResourceResponse(
-        uri.href,
-        `❌ Ошибка получения пресетов баз данных: ${
-          error instanceof Error ? error.message : "Неизвестная ошибка"
-        }`
-      );
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

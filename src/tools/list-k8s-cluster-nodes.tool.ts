@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -23,14 +24,7 @@ const handler = async (params: { cluster_id: number }) => {
       `Все ноды кластера ${params.cluster_id} (${nodes.length}):\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения списка нод. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении списка нод"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,4 +1,4 @@
-import { BaseApiClient } from "./client";
+import { BaseApiClient, RequestOptions } from "./client";
 import { Server } from "../types/server.type";
 import { ServerLog } from "../types/server-log.type";
 import { ServerBackup } from "../types/server-backup.type";
@@ -203,10 +203,11 @@ export class ServersApiClient extends BaseApiClient {
   /**
    * Создаёт новый облачный сервер
    */
-  async createServer(data: CreateServerRequestDto): Promise<Server> {
+  async createServer(data: CreateServerRequestDto, options?: RequestOptions): Promise<Server> {
     const response = await this.post<CreateServerResponseDto>(
       "/api/v1/servers",
-      data
+      data,
+      { ...options, semantics: "mutation" }
     );
     return response.server;
   }

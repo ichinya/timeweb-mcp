@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -44,12 +45,7 @@ const handler = async (params: {
         (quarantined ? "\nЕго можно будет восстановить в течение периода карантина." : "")
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось удалить сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при удалении сервера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

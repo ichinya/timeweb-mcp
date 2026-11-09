@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -41,14 +42,7 @@ const handler = async (params: {
 • Политика: ${g.policy}
 • Создана: ${new Date(g.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания группы firewall. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании группы firewall"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

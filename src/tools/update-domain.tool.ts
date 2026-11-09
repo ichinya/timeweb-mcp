@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -46,12 +47,7 @@ const handler = async (params: {
 • Автопродление: ${d.is_autoprolong_enabled ? "да" : "нет"}
 • Статус: ${d.domain_status}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления домена "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении домена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listBucketUsersAction } from "../actions/list-bucket-users.action";
@@ -20,14 +21,7 @@ const handler = async () => {
       `Пользователи S3-хранилищ (${users.length}):\n\n${lines.join("\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения пользователей S3-хранилищ. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении пользователей S3-хранилищ"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -193,14 +194,7 @@ const handler = async (params: {
 • Preset: ${b.preset_id}
 • Создан: ${new Date(b.created_at).toLocaleString("ru-RU")}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания балансировщика. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при создании балансировщика"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

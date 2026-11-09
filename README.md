@@ -197,6 +197,7 @@ npm run inspect
 | `npm run type-check`        | Проверка TypeScript без генерации файлов                               | Windows, macOS, Linux |
 | `npm run build`             | Сборка проекта                                                         | Windows, macOS, Linux |
 | `npm run test:release`      | Проверка логики определения новой версии и релизного тега              | Windows, macOS, Linux |
+| `npm run test:transport`    | Проверка типов и offline-тесты ошибок API, отмены и потерянного ответа | Windows, macOS, Linux |
 | `npm run smoke`             | Проверка запуска собранного MCP-сервера и чистоты `stdout`             | Windows, macOS, Linux |
 | `npm run verify`            | Полная проверка OpenAPI, релизной логики, TypeScript, сборки и запуска | Windows, macOS, Linux |
 | `npm run start`             | Запуск `dist/index.js` с загрузкой `.env`                              | Windows, macOS, Linux |
@@ -204,6 +205,11 @@ npm run inspect
 | `npm run clean`             | Удаление `dist`                                                        | Windows, macOS, Linux |
 | `npm run normalize:openapi` | Нормализация конфликтующих имён схем                                   | Windows, macOS, Linux |
 | `npm run validate:openapi`  | Проверка локальной OpenAPI-спецификации                                | Windows, macOS, Linux |
+
+Обработка ошибок, неизвестный результат изменения ресурса и правила повторов описаны в
+[`docs/transport-errors.md`](docs/transport-errors.md). Автоматические повторы API-запросов
+не выполняются. При потере ответа изменение могло завершиться: перед повтором проверьте
+состояние ресурса. Транспортные тесты не используют настоящий токен или cloud-ресурсы.
 
 ## Выпуск новой версии
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -22,12 +23,7 @@ const handler = async (params: { fqdn: string; subdomain_fqdn: string }) => {
 • FQDN: ${sub.fqdn}
 • Привязанный IP: ${sub.linked_ip ?? "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка создания поддомена "${params.subdomain_fqdn}" для "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании поддомена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -75,12 +76,7 @@ const handler = async (params: {
         `Статус: ${server.status} — процесс ресайза занимает несколько минут.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось изменить конфигурацию сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при ресайзе");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

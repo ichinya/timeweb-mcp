@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -79,14 +80,7 @@ const handler = async (params: {
 • Configurator ID: ${bucket.configurator_id ?? "—"}
 • Описание: ${bucket.description || "—"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления S3-хранилища ${params.bucket_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при обновлении S3-хранилища"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

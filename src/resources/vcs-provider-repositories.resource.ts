@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 
 import { getVcsProviderRepositoriesAction } from "../actions/get-vcs-provider-repositories.action";
 import { ResourceNames } from "../types/resource-names.enum";
@@ -30,17 +31,7 @@ export const vcsProviderRepositoriesResource = {
 
       return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return createResourceResponse(
-          uri.href,
-          `Не удалось получить список репозиториев провайдера. Причина: ${error.message}`
-        );
-      }
-
-      return createResourceResponse(
-        uri.href,
-        `Не удалось получить список репозиториев провайдера`
-      );
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

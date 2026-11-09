@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -76,12 +77,7 @@ const handler = async (params: {
 • Автоответчик: ${updated.autoreply_status ? "вкл" : "выкл"}
 • Пересылка исходящих: ${updated.outgoing_control ? "вкл" : "выкл"}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка обновления ящика. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении ящика");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -34,12 +35,7 @@ const handler = async (params: { server_id: number; disk_id: number }) => {
       `Бэкапы диска ${params.disk_id} сервера ${params.server_id} (${backups.length}):\n\n${lines.join("\n\n")}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить бэкапы. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении бэкапов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -26,12 +27,7 @@ const handler = async (params: { fqdn: string }) => {
 • Провайдер: ${d.provider ?? "—"}
 • Поддоменов: ${d.subdomains?.length ?? 0}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения домена "${params.fqdn}". Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении домена");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

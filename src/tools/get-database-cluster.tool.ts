@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -38,12 +39,7 @@ const handler = async (params: { db_cluster_id: number }) => {
 Полный JSON:
 ${JSON.stringify(c, null, 2)}`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения кластера ${params.db_cluster_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении кластера");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

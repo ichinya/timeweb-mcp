@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { z } from "zod";
@@ -31,15 +32,7 @@ const handler = async (params: { repository_url: string }) => {
 
     🎉 VCS провайдер успешно найден!`);
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка при поиске VCS провайдера. Причина: ${error.message}`
-      );
-    }
-
-    return createToolResponse(
-      `❌ Неизвестная ошибка при поиске VCS провайдера.`
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

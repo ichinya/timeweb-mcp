@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { listServerSoftwareAction } from "../actions/list-server-software.action";
@@ -26,14 +27,7 @@ const handler = async () => {
       `🧩 ПО из маркетплейса (${software.length}):\n\n${lines.join("\n")}\n\n💡 Используйте ID в поле software_id при создании VPS (ОС должна быть из os_ids).`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Ошибка получения ПО из маркетплейса. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse(
-      "❌ Неизвестная ошибка при получении списка ПО"
-    );
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -16,12 +17,7 @@ const handler = async (params: { server_id: number }) => {
       `✅ Команда мягкой перезагрузки (ACPI reboot) отправлена для сервера ${params.server_id}. Статус перейдёт в rebooting → on.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось перезагрузить сервер ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при перезагрузке");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -31,12 +32,7 @@ const handler = async (params: {
       `✅ NAT-режим сервера ${params.server_id} установлен: ${params.nat_mode}.`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось изменить NAT-режим сервера ${params.server_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при смене NAT-режима");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

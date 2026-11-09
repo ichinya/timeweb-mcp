@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -41,12 +42,7 @@ const handler = async (params: {
         `• По умолчанию: ${project.is_default ? "да" : "нет"}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось создать проект. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при создании проекта");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

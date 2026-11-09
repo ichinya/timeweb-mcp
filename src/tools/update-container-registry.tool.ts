@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { z } from "zod";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
@@ -72,12 +73,7 @@ const handler = async (params: {
         `Диск: ${r.disk_stats.used}/${r.disk_stats.size} ГБ`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось обновить реестр ${params.registry_id}. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при обновлении реестра");
+    return createToolResponse(formatRequestError(error));
   }
 };
 

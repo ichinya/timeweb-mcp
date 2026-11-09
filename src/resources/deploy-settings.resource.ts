@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getDeploySettingsAction } from "../actions/get-deploy-settings.action";
 import { ResourceNames } from "../types/resource-names.enum";
@@ -23,17 +24,7 @@ export const deploySettingsResource = {
 
       return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return createResourceResponse(
-          uri.href,
-          `Не удалось получить настройки деплоя. Причина: ${error.message}`
-        );
-      }
-
-      return createResourceResponse(
-        uri.href,
-        `Не удалось получить настройки деплоя`
-      );
-    }
+    return createResourceResponse(uri.href, formatRequestError(error));
+  }
   },
 };

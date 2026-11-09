@@ -1,3 +1,4 @@
+import { formatRequestError } from "../exceptions/server.exception";
 import { createToolResponse } from "../utils";
 import { ToolNames } from "../types/tool-names.enum";
 import { getAccountFinancesAction } from "../actions/get-account-finances.action";
@@ -19,12 +20,7 @@ const handler = async () => {
         `Автоплатёж: ${f.autopay_card_info ?? "не подключен"}`
     );
   } catch (error) {
-    if (error instanceof Error) {
-      return createToolResponse(
-        `❌ Не удалось получить финансы аккаунта. Причина: ${error.message}`
-      );
-    }
-    return createToolResponse("❌ Неизвестная ошибка при получении финансов");
+    return createToolResponse(formatRequestError(error));
   }
 };
 
