@@ -176,20 +176,18 @@ export const createAppHandler = (client: AppClient = appsApiClient) => async (pa
       );
     }
 
+    const deploySetting = deploySettings?.find(
+      (setting) => setting.framework === params.framework
+    );
+    // Explicit values, including "", take priority; defaults only fill undefined.
     const appParams = {
       ...params,
       preset_id: params.preset_id,
       provider_id: params.provider_id,
+      build_cmd: params.build_cmd !== undefined ? params.build_cmd : deploySetting?.build_cmd,
+      run_cmd: params.run_cmd !== undefined ? params.run_cmd : deploySetting?.run_cmd,
+      index_dir: params.index_dir !== undefined ? params.index_dir : deploySetting?.index_dir,
     };
-
-    const deploySetting = deploySettings?.find(
-      (setting) => setting.framework === params.framework
-    );
-    if (deploySetting) {
-      params.build_cmd = deploySetting.build_cmd;
-      params.run_cmd = deploySetting.run_cmd;
-      params.index_dir = deploySetting.index_dir;
-    }
 
     const app = await createAppAction(appParams, client);
 

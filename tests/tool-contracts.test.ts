@@ -25,7 +25,8 @@ import { toolAnnotations } from "../src/tool-annotations";
 import * as tools from "../src/tools";
 import { CreateAppParams } from "../src/types/create-app-params.type";
 import { AppTypes } from "../src/types/app-types.enum";
-import { FrameworksBackend } from "../src/types/app-frameworks.type";
+import { FrameworksBackend, FrameworksFrontend } from "../src/types/app-frameworks.type";
+import { DeploySettingsDto } from "../src/types/dto/get-deploy-settings-response.dto";
 import { createToolResponse } from "../src/utils";
 
 function response(config: InternalAxiosRequestConfig, data: unknown, status = 200): AxiosResponse {
@@ -122,7 +123,7 @@ test("dependency upgrades preserve environment records, enum choices and IPv4 va
   assert.equal(createDatabaseTool.inputSchema.floating_ip.safeParse("invalid").success, false);
 });
 
-type Fixture = { providers?: unknown; repositories?: Record<string, unknown>; presets?: unknown };
+type Fixture = { providers?: unknown; repositories?: Record<string, unknown>; presets?: unknown; deploySettings?: DeploySettingsDto[] };
 function appFixture(fixture: Fixture = {}) {
   const journal: { method: string; url: string; data?: Record<string, unknown> }[] = [];
   const providers = [{ provider: "github", provider_id: providerId, login: "personal-account" }];
@@ -133,12 +134,111 @@ function appFixture(fixture: Fixture = {}) {
     if (config.method === "post") return response(config, { app: { ...body, id: 1, domains: [] } }, 201);
     if (config.url === "/api/v1/vcs-provider") return response(config, { providers: "providers" in fixture ? fixture.providers : providers });
     if (config.url === "/api/v1/presets/apps") return response(config, "presets" in fixture ? fixture.presets : { backend_presets: [{ id: 101 }], frontend_presets: [{ id: 202 }] });
-    if (config.url === "/api/v1/deploy-settings/apps") return response(config, { default_deploy_settings: [] });
+    if (config.url === "/api/v1/deploy-settings/apps") return response(config, { default_deploy_settings: fixture.deploySettings ?? [] });
     const id = config.url!.split("/").pop()!;
     return response(config, { repositories: (fixture.repositories ?? repositories)[id] });
   } });
   return { api, journal, handler: createAppHandler(api) };
 }
+
+const frontendParams: CreateAppParams = { ...appParams, type: AppTypes.FRONTEND,
+  framework: FrameworksFrontend.REACT, preset_id: 202, run_cmd: "" };
+const frontendDefaults: DeploySettingsDto = { framework: "react", build_cmd: "default-build",
+  run_cmd: "default-run", index_dir: "dist" };
+const backendDefaults: DeploySettingsDto = { ...frontendDefaults, framework: "express" };
+
+test("create_app resolves deploy defaults per field without mutating input", async t => {
+  const scenarios: { name: string; input: CreateAppParams; settings?: DeploySettingsDto[];
+    expected: { build_cmd?: string; run_cmd?: string; index_dir?: string } }[] = [
+    { name: "frontend missing directory uses its framework default", input: frontendParams,
+      settings: [frontendDefaults], expected: { build_cmd: "npm run build", index_dir: "dist" } },
+    { name: "backend missing build and run use defaults", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+      settings: [backendDefaults], expected: { build_cmd: "default-build", run_cmd: "default-run" } },
+    { name: "explicit build and absent run resolve independently", input: { ...appParams, run_cmd: undefined, index_dir: "unused" },
+      settings: [backendDefaults], expected: { build_cmd: "npm run build", run_cmd: "default-run" } },
+    { name: "absent build and explicit run resolve independently", input: { ...appParams, build_cmd: undefined },
+      settings: [backendDefaults], expected: { build_cmd: "default-build", run_cmd: "npm start" } },
+    { name: "backend explicit commands override defaults", input: { ...appParams, index_dir: "unused" },
+      settings: [backendDefaults], expected: { build_cmd: "npm run build", run_cmd: "npm start" } },
+    { name: "frontend explicit directory overrides default", input: { ...frontendParams, index_dir: "public", run_cmd: "unused" },
+      settings: [frontendDefaults], expected: { build_cmd: "npm run build", index_dir: "public" } },
+    { name: "empty backend commands override nonempty defaults", input: { ...appParams, build_cmd: "", run_cmd: "" },
+      settings: [backendDefaults], expected: { build_cmd: "", run_cmd: "" } },
+    { name: "empty frontend build and directory override defaults", input: { ...frontendParams, build_cmd: "", index_dir: "" },
+      settings: [frontendDefaults], expected: { build_cmd: "", index_dir: "" } },
+    { name: "backend empty catalog preserves action fallback", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+      settings: [], expected: { run_cmd: "" } },
+    { name: "frontend empty catalog preserves action fallback", input: { ...frontendParams, build_cmd: undefined },
+      settings: [], expected: { index_dir: "" } },
+    { name: "backend ignores settings of another framework", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+      settings: [frontendDefaults], expected: { run_cmd: "" } },
+    { name: "frontend ignores settings of another framework", input: { ...frontendParams, build_cmd: undefined },
+      settings: [backendDefaults], expected: { index_dir: "" } },
+    { name: "absent default run uses action fallback", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+      settings: [{ framework: "express", build_cmd: "default-build", index_dir: "dist" }],
+      expected: { build_cmd: "default-build", run_cmd: "" } },
+    { name: "explicit values survive without matching settings", input: { ...frontendParams, index_dir: "public" },
+      expected: { build_cmd: "npm run build", index_dir: "public" } },
+  ];
+  for (const scenario of scenarios) {
+    await t.test(scenario.name, async () => {
+      const fixture = appFixture({ deploySettings: scenario.settings });
+      const input = structuredClone(scenario.input);
+      const before = structuredClone(input);
+      const result = await fixture.handler(input);
+      assert.notEqual(result.isError, true);
+      assert.deepEqual(input, before);
+      const writes = fixture.journal.filter(item => item.method === "post");
+      assert.equal(writes.length, 1);
+      assert.equal(writes[0].url, "/api/v1/apps");
+      assert.deepEqual(Object.fromEntries(Object.entries(writes[0].data!).filter(([name]) =>
+        ["build_cmd", "run_cmd", "index_dir"].includes(name))), scenario.expected);
+      assert.equal(writes[0].data?.provider_id, input.provider_id);
+      assert.equal(writes[0].data?.repository_id, input.repository_id);
+      assert.equal(writes[0].data?.preset_id, input.preset_id);
+    });
+  }
+});
+
+test("create_app accepts frozen input with matching deploy defaults", async () => {
+  const fixture = appFixture({ deploySettings: [frontendDefaults] });
+  const input: CreateAppParams = { ...frontendParams, envs: { MODE: "offline" }, system_dependencies: ["curl"] };
+  const before = structuredClone(input);
+  Object.freeze(input.envs);
+  Object.freeze(input.system_dependencies);
+  Object.freeze(input);
+  const result = await fixture.handler(input);
+  assert.notEqual(result.isError, true);
+  assert.deepEqual(input, before);
+  const writes = fixture.journal.filter(item => item.method === "post");
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].data?.index_dir, "dist");
+  assert.deepEqual(writes[0].data?.envs, before.envs);
+  assert.deepEqual(writes[0].data?.system_dependencies, before.system_dependencies);
+  assert.equal(writes[0].data?.provider_id, input.provider_id);
+  assert.equal(writes[0].data?.repository_id, input.repository_id);
+  assert.equal(writes[0].data?.preset_id, input.preset_id);
+});
+
+test("MCP frontend creation uses a default directory and keeps explicit build", async () => {
+  const fixture = appFixture({ deploySettings: [frontendDefaults] });
+  const server = new McpServer({ name: "offline", version: "1" });
+  server.registerTool(createAppTool.name, { inputSchema: createAppTool.inputSchema },
+    wrapRequestHandler(createAppTool.name, fixture.handler));
+  const pair = await connect(server);
+  try {
+    const result = await pair.client.callTool({ name: createAppTool.name, arguments: { ...frontendParams } });
+    assert.notEqual(result.isError, true);
+    const writes = fixture.journal.filter(item => item.method === "post");
+    assert.equal(writes.length, 1);
+    assert.equal(writes[0].data?.index_dir, "dist");
+    assert.equal(writes[0].data?.build_cmd, frontendParams.build_cmd);
+    assert.equal(Object.hasOwn(writes[0].data!, "run_cmd"), false);
+    assert.equal(writes[0].data?.provider_id, frontendParams.provider_id);
+    assert.equal(writes[0].data?.repository_id, frontendParams.repository_id);
+    assert.equal(writes[0].data?.preset_id, frontendParams.preset_id);
+  } finally { await pair.close(); }
+});
 
 test("create_app preserves the selected provider, repository and tariff across MCP", async () => {
   const fixture = appFixture();
