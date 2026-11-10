@@ -13,6 +13,7 @@ export type KnowledgeBase = {
   id: number;
   name: string;
   description?: string | null;
+  project_id?: number;
   dbaas_id: number;
   status: "active" | "blocked" | "creating" | "deleted";
   last_sync?: string | null;
@@ -20,7 +21,7 @@ export type KnowledgeBase = {
   used_tokens: number;
   remaining_tokens: number;
   token_package_id: number;
-  subscription_renewal_date: string;
+  subscription_renewal_date: string | null;
   documents?: KnowledgeBaseDocument[];
   documents_count?: number;
   agents_ids: number[];

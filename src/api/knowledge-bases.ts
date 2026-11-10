@@ -1,4 +1,5 @@
 import { BaseApiClient } from "./client";
+import { parseKnowledgeBaseResponse } from "./knowledge-base-response";
 import {
   KnowledgeBase,
   KnowledgeBaseDocument,
@@ -33,7 +34,7 @@ export class KnowledgeBasesApiClient extends BaseApiClient {
     const response = await this.get<ListKnowledgeBasesResponseDto>(
       "/api/v2/cloud-ai/knowledge-bases"
     );
-    return response.knowledgebases;
+    return parseKnowledgeBaseResponse(response, 2, true);
   }
 
   /**
@@ -43,7 +44,7 @@ export class KnowledgeBasesApiClient extends BaseApiClient {
     const response = await this.get<ListKnowledgeBasesResponseDto>(
       "/api/v1/cloud-ai/knowledge-bases"
     );
-    return response.knowledgebases;
+    return parseKnowledgeBaseResponse(response, 1, true);
   }
 
   /**
@@ -53,7 +54,7 @@ export class KnowledgeBasesApiClient extends BaseApiClient {
     const response = await this.get<GetKnowledgeBaseResponseDto>(
       `/api/v1/cloud-ai/knowledge-bases/${id}`
     );
-    return response.knowledgebase;
+    return parseKnowledgeBaseResponse(response, 1, false, false);
   }
 
   /**
@@ -64,9 +65,10 @@ export class KnowledgeBasesApiClient extends BaseApiClient {
   ): Promise<KnowledgeBase> {
     const response = await this.post<GetKnowledgeBaseResponseDto>(
       "/api/v1/cloud-ai/knowledge-bases",
-      data
+      data,
+      { semantics: "mutation" }
     );
-    return response.knowledgebase;
+    return parseKnowledgeBaseResponse(response, 1, false, true);
   }
 
   /**
@@ -78,9 +80,10 @@ export class KnowledgeBasesApiClient extends BaseApiClient {
   ): Promise<KnowledgeBase> {
     const response = await this.patch<GetKnowledgeBaseResponseDto>(
       `/api/v1/cloud-ai/knowledge-bases/${id}`,
-      data
+      data,
+      { semantics: "mutation" }
     );
-    return response.knowledgebase;
+    return parseKnowledgeBaseResponse(response, 1, false, true);
   }
 
   /**

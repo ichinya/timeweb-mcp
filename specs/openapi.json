@@ -35992,7 +35992,7 @@
     "/api/v2/cloud-ai/knowledge-bases": {
       "get": {
         "summary": "Получение списка баз знаний (v2)",
-        "description": "Чтобы получить список баз знаний, отправьте GET-запрос на `/api/v2/cloud-ai/knowledge-bases`.\n\nВерсия API v2 возвращает оптимизированный ответ с количеством документов вместо полного списка документов.\n\nТело ответа будет представлять собой объект JSON с ключом `knowledgebases`.",
+        "description": "Чтобы получить список баз знаний, отправьте GET-запрос на `/api/v2/cloud-ai/knowledge-bases`.\n\nВерсия API v2 возвращает оптимизированный ответ с количеством документов вместо полного списка документов.\n\nТело ответа будет представлять собой объект JSON с ключом `knowledge_bases`.",
         "operationId": "getKnowledgebasesV2",
         "x-codeSamples": [
           {
@@ -36027,7 +36027,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Объект JSON c ключами `knowledgebases` и `meta`",
+            "description": "Объект JSON c ключами `knowledge_bases` и `meta`",
             "content": {
               "application/json": {
                 "schema": {
@@ -36035,7 +36035,7 @@
                     {
                       "type": "object",
                       "properties": {
-                        "knowledgebases": {
+                        "knowledge_bases": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/knowledgebase-v2"
@@ -36056,7 +36056,7 @@
                         }
                       },
                       "required": [
-                        "knowledgebases",
+                        "knowledge_bases",
                         "meta"
                       ]
                     },
@@ -36108,7 +36108,7 @@
     "/api/v1/cloud-ai/knowledge-bases": {
       "get": {
         "summary": "Получение списка баз знаний",
-        "description": "Чтобы получить список баз знаний, отправьте GET-запрос на `/api/v1/cloud-ai/knowledge-bases`.\n\nТело ответа будет представлять собой объект JSON с ключом `knowledgebases`.",
+        "description": "Чтобы получить список баз знаний, отправьте GET-запрос на `/api/v1/cloud-ai/knowledge-bases`.\n\nТело ответа будет представлять собой объект JSON с ключом `knowledge_bases`.",
         "deprecated": true,
         "operationId": "getKnowledgebases",
         "parameters": [],
@@ -36145,7 +36145,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Объект JSON c ключами `knowledgebases` и `meta`",
+            "description": "Объект JSON c ключами `knowledge_bases` и `meta`",
             "content": {
               "application/json": {
                 "schema": {
@@ -36153,7 +36153,7 @@
                     {
                       "type": "object",
                       "properties": {
-                        "knowledgebases": {
+                        "knowledge_bases": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/knowledgebase"
@@ -36174,7 +36174,7 @@
                         }
                       },
                       "required": [
-                        "knowledgebases",
+                        "knowledge_bases",
                         "meta"
                       ]
                     },
@@ -36270,7 +36270,7 @@
         ],
         "responses": {
           "201": {
-            "description": "Объект JSON c ключом `knowledgebase`",
+            "description": "Объект JSON c ключом `knowledge_base`",
             "content": {
               "application/json": {
                 "schema": {
@@ -36278,12 +36278,12 @@
                     {
                       "type": "object",
                       "properties": {
-                        "knowledgebase": {
+                        "knowledge_base": {
                           "$ref": "#/components/schemas/knowledgebase"
                         }
                       },
                       "required": [
-                        "knowledgebase"
+                        "knowledge_base"
                       ]
                     },
                     {
@@ -36371,7 +36371,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Объект JSON c ключом `knowledgebase`",
+            "description": "Объект JSON c ключом `knowledge_base`",
             "content": {
               "application/json": {
                 "schema": {
@@ -36379,12 +36379,12 @@
                     {
                       "type": "object",
                       "properties": {
-                        "knowledgebase": {
+                        "knowledge_base": {
                           "$ref": "#/components/schemas/knowledgebase"
                         }
                       },
                       "required": [
-                        "knowledgebase"
+                        "knowledge_base"
                       ]
                     },
                     {
@@ -36483,7 +36483,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Объект JSON c ключом `knowledgebase`",
+            "description": "Объект JSON c ключом `knowledge_base`",
             "content": {
               "application/json": {
                 "schema": {
@@ -36491,12 +36491,12 @@
                     {
                       "type": "object",
                       "properties": {
-                        "knowledgebase": {
+                        "knowledge_base": {
                           "$ref": "#/components/schemas/knowledgebase"
                         }
                       },
                       "required": [
-                        "knowledgebase"
+                        "knowledge_base"
                       ]
                     },
                     {
@@ -53580,7 +53580,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "number",
+            "type": "integer",
             "description": "Уникальный идентификатор базы знаний",
             "example": 1
           },
@@ -53596,7 +53596,7 @@
             "example": "База знаний с документацией"
           },
           "dbaas_id": {
-            "type": "number",
+            "type": "integer",
             "description": "ID базы данных opensearch",
             "example": 123
           },
@@ -53619,22 +53619,22 @@
             "example": "2024-10-16T10:00:00.000Z"
           },
           "total_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Всего токенов выделено",
             "example": 100000
           },
           "used_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Использовано токенов",
             "example": 5000
           },
           "remaining_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Осталось токенов",
             "example": 95000
           },
           "token_package_id": {
-            "type": "number",
+            "type": "integer",
             "description": "ID пакета токенов",
             "example": 1
           },
@@ -53642,17 +53642,18 @@
             "type": "string",
             "format": "date-time",
             "description": "Дата обновления подписки",
-            "example": "2025-01-01T00:00:00.000Z"
+            "example": "2025-01-01T00:00:00.000Z",
+            "nullable": true
           },
           "documents_count": {
-            "type": "number",
+            "type": "integer",
             "description": "Общее количество документов в базе знаний",
             "example": 15
           },
           "agents_ids": {
             "type": "array",
             "items": {
-              "type": "number"
+              "type": "integer"
             },
             "description": "ID агентов, связанных с базой знаний",
             "example": [
@@ -53666,6 +53667,11 @@
             "format": "date-time",
             "description": "Дата создания базы знаний",
             "example": "2024-10-16T10:00:00.000Z"
+          },
+          "project_id": {
+            "type": "integer",
+            "description": "ID проекта; поле отсутствует, если проект не определён",
+            "example": 2265605
           }
         },
         "required": [
@@ -53680,7 +53686,9 @@
           "subscription_renewal_date",
           "documents_count",
           "agents_ids",
-          "created_at"
+          "created_at",
+          "description",
+          "last_sync"
         ]
       },
       "document-status-info": {
@@ -53892,7 +53900,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "number",
+            "type": "integer",
             "description": "Уникальный идентификатор базы знаний",
             "example": 1
           },
@@ -53908,7 +53916,7 @@
             "example": "База знаний с документацией"
           },
           "dbaas_id": {
-            "type": "number",
+            "type": "integer",
             "description": "ID базы данных opensearch",
             "example": 123
           },
@@ -53931,22 +53939,22 @@
             "example": "2024-10-16T10:00:00.000Z"
           },
           "total_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Всего токенов выделено",
             "example": 100000
           },
           "used_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Использовано токенов",
             "example": 5000
           },
           "remaining_tokens": {
-            "type": "number",
+            "type": "integer",
             "description": "Осталось токенов",
             "example": 95000
           },
           "token_package_id": {
-            "type": "number",
+            "type": "integer",
             "description": "ID пакета токенов",
             "example": 1
           },
@@ -53954,7 +53962,8 @@
             "type": "string",
             "format": "date-time",
             "description": "Дата обновления подписки",
-            "example": "2025-01-01T00:00:00.000Z"
+            "example": "2025-01-01T00:00:00.000Z",
+            "nullable": true
           },
           "documents": {
             "type": "array",
@@ -53966,7 +53975,7 @@
           "agents_ids": {
             "type": "array",
             "items": {
-              "type": "number"
+              "type": "integer"
             },
             "description": "ID агентов, связанных с базой знаний",
             "example": [
@@ -53980,6 +53989,11 @@
             "format": "date-time",
             "description": "Дата создания базы знаний",
             "example": "2024-10-16T10:00:00.000Z"
+          },
+          "project_id": {
+            "type": "integer",
+            "description": "ID проекта; поле отсутствует, если проект не определён",
+            "example": 2265605
           }
         },
         "required": [
@@ -53994,7 +54008,9 @@
           "subscription_renewal_date",
           "documents",
           "agents_ids",
-          "created_at"
+          "created_at",
+          "description",
+          "last_sync"
         ]
       },
       "create-knowledgebase": {
