@@ -123,7 +123,7 @@ test("dependency upgrades preserve environment records, enum choices and IPv4 va
   assert.equal(createDatabaseTool.inputSchema.floating_ip.safeParse("invalid").success, false);
 });
 
-type Fixture = { providers?: unknown; repositories?: Record<string, unknown>; presets?: unknown; deploySettings?: DeploySettingsDto[] };
+type Fixture = { providers?: unknown; repositories?: Record<string, unknown>; presets?: unknown; deploySettings?: unknown };
 function appFixture(fixture: Fixture = {}) {
   const journal: { method: string; url: string; data?: Record<string, unknown> }[] = [];
   const providers = [{ provider: "github", provider_id: providerId, login: "personal-account" }];
@@ -147,9 +147,132 @@ const frontendDefaults: DeploySettingsDto = { framework: "react", build_cmd: "de
   run_cmd: "default-run", index_dir: "dist" };
 const backendDefaults: DeploySettingsDto = { ...frontendDefaults, framework: "express" };
 
+function withoutRun(params: CreateAppParams): CreateAppParams {
+  const input = { ...params };
+  delete input.run_cmd;
+  return input;
+}
+
+async function callApp(fixture: ReturnType<typeof appFixture>, input: CreateAppParams, via: "handler" | "MCP") {
+  if (via === "handler") return fixture.handler(input);
+  const server = new McpServer({ name: "offline", version: "1" });
+  server.registerTool(createAppTool.name, { inputSchema: createAppTool.inputSchema },
+    wrapRequestHandler(createAppTool.name, fixture.handler));
+  const pair = await connect(server);
+  try {
+    return await pair.client.callTool({ name: createAppTool.name, arguments: { ...input } });
+  } finally { await pair.close(); }
+}
+
+test("run command policy agrees between MCP and the direct handler", async t => {
+  const sentinel = "DO_NOT_EMIT_RUN_DEFAULT";
+  const badDefault = { ...backendDefaults, run_cmd: { token: sentinel } };
+  const cases: { name: string; input: CreateAppParams; settings?: unknown; run?: string; error?: true }[] = [
+    { name: "frontend omitted command", input: withoutRun(frontendParams) },
+    { name: "frontend omitted command with defaults", input: withoutRun(frontendParams), settings: [frontendDefaults] },
+    { name: "frontend nonempty command is not sent", input: { ...frontendParams, run_cmd: "ignored" } },
+    { name: "frontend empty command is not sent", input: frontendParams, settings: [frontendDefaults] },
+    { name: "frontend ignores malformed unused default", input: withoutRun(frontendParams),
+      settings: [{ ...frontendDefaults, run_cmd: { token: sentinel } }] },
+    { name: "backend omitted command uses default", input: withoutRun(appParams), settings: [backendDefaults], run: "default-run" },
+    { name: "backend empty default is a string", input: withoutRun(appParams), settings: [{ ...backendDefaults, run_cmd: "" }], run: "" },
+    { name: "backend without a default fails", input: withoutRun(appParams), error: true },
+    { name: "backend ignores defaults of another framework", input: withoutRun(appParams), settings: [frontendDefaults], error: true },
+    { name: "backend default without a command fails", input: withoutRun(appParams),
+      settings: [{ framework: "express", build_cmd: "default-build", index_dir: "dist" }], error: true },
+    { name: "backend explicit command overrides default", input: appParams, settings: [backendDefaults], run: "npm start" },
+    { name: "backend explicit empty command overrides default", input: { ...appParams, run_cmd: "" }, settings: [backendDefaults], run: "" },
+    { name: "backend explicit command needs no default", input: appParams, run: "npm start" },
+    { name: "backend explicit command overrides malformed default", input: appParams, settings: [badDefault], run: "npm start" },
+    { name: "backend explicit empty command overrides malformed default", input: { ...appParams, run_cmd: "" }, settings: [badDefault], run: "" },
+  ];
+  for (const via of ["handler", "MCP"] as const) {
+    for (const scenario of cases) {
+      await t.test(`${via}: ${scenario.name}`, async () => {
+        const fixture = appFixture({ deploySettings: scenario.settings });
+        const input = structuredClone(scenario.input);
+        const before = structuredClone(input);
+        Object.freeze(input);
+        const result = await callApp(fixture, input, via);
+        assert.deepEqual(input, before);
+        assert.ok(!JSON.stringify(result).includes(sentinel));
+        const writes = fixture.journal.filter(item => item.method === "post");
+        if (scenario.error) {
+          assert.equal(result.isError, true);
+          assert.match(JSON.stringify(result), /run_cmd/);
+          assert.equal(writes.length, 0);
+          return;
+        }
+        assert.notEqual(result.isError, true);
+        assert.equal(writes.length, 1);
+        assert.equal(writes[0].data?.provider_id, input.provider_id);
+        assert.equal(writes[0].data?.repository_id, input.repository_id);
+        assert.equal(writes[0].data?.preset_id, input.preset_id);
+        if (input.type === AppTypes.FRONTEND) assert.equal(Object.hasOwn(writes[0].data!, "run_cmd"), false);
+        else {
+          assert.equal(writes[0].data?.run_cmd, scenario.run);
+          assert.equal(Object.hasOwn(writes[0].data!, "index_dir"), false);
+        }
+      });
+    }
+  }
+  await t.test("direct explicit undefined uses a default without altering the input", async () => {
+    const fixture = appFixture({ deploySettings: [backendDefaults] });
+    const input = Object.freeze({ ...appParams, run_cmd: undefined });
+    const before = structuredClone(input);
+    assert.equal(Object.hasOwn(input, "run_cmd"), true);
+    const result = await fixture.handler(input);
+    assert.notEqual(result.isError, true);
+    assert.deepEqual(input, before);
+    const writes = fixture.journal.filter(item => item.method === "post");
+    assert.equal(writes.length, 1);
+    assert.equal(writes[0].data?.run_cmd, "default-run");
+    assert.equal(writes[0].data?.provider_id, input.provider_id);
+    assert.equal(writes[0].data?.repository_id, input.repository_id);
+    assert.equal(writes[0].data?.preset_id, input.preset_id);
+  });
+});
+
+test("invalid run command inputs are rejected before any API read without exposing values", async () => {
+  const sentinel = "DO_NOT_EMIT_RUN_INPUT";
+  const values: unknown[] = [null, 42, true, { token: sentinel }, [sentinel]];
+  for (const via of ["handler", "MCP"] as const) {
+    for (const base of [appParams, frontendParams]) {
+      for (const value of values) {
+        const fixture = appFixture({ deploySettings: [backendDefaults, frontendDefaults] });
+        const input = { ...base, run_cmd: value } as unknown as CreateAppParams;
+        const before = structuredClone(input);
+        const result = await callApp(fixture, input, via);
+        assert.equal(result.isError, true);
+        assert.match(JSON.stringify(result), /run_cmd/);
+        assert.ok(!JSON.stringify(result).includes(sentinel));
+        assert.deepEqual(input, before);
+        assert.deepEqual(fixture.journal, []);
+      }
+    }
+  }
+});
+
+test("malformed selected backend defaults never dispatch a create or expose their payload", async () => {
+  const sentinel = "DO_NOT_EMIT_SELECTED_RUN_DEFAULT";
+  for (const via of ["handler", "MCP"] as const) {
+    for (const value of [null, 42, true, { token: sentinel }, [sentinel]]) {
+      const fixture = appFixture({ deploySettings: [{ ...backendDefaults, run_cmd: value }] });
+      const input = withoutRun(appParams);
+      const before = structuredClone(input);
+      const result = await callApp(fixture, input, via);
+      assert.equal(result.isError, true);
+      assert.match(JSON.stringify(result), /run_cmd/);
+      assert.ok(!JSON.stringify(result).includes(sentinel));
+      assert.equal(fixture.journal.filter(item => item.method === "post").length, 0);
+      assert.deepEqual(input, before);
+    }
+  }
+});
+
 test("create_app resolves deploy defaults per field without mutating input", async t => {
   const scenarios: { name: string; input: CreateAppParams; settings?: DeploySettingsDto[];
-    expected: { build_cmd?: string; run_cmd?: string; index_dir?: string } }[] = [
+    expected: { build_cmd?: string; run_cmd?: string; index_dir?: string } | null }[] = [
     { name: "frontend missing directory uses its framework default", input: frontendParams,
       settings: [frontendDefaults], expected: { build_cmd: "npm run build", index_dir: "dist" } },
     { name: "backend missing build and run use defaults", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
@@ -166,17 +289,17 @@ test("create_app resolves deploy defaults per field without mutating input", asy
       settings: [backendDefaults], expected: { build_cmd: "", run_cmd: "" } },
     { name: "empty frontend build and directory override defaults", input: { ...frontendParams, build_cmd: "", index_dir: "" },
       settings: [frontendDefaults], expected: { build_cmd: "", index_dir: "" } },
-    { name: "backend empty catalog preserves action fallback", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
-      settings: [], expected: { run_cmd: "" } },
+    { name: "backend empty catalog cannot supply a missing run command", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+      settings: [], expected: null },
     { name: "frontend empty catalog preserves action fallback", input: { ...frontendParams, build_cmd: undefined },
       settings: [], expected: { index_dir: "" } },
     { name: "backend ignores settings of another framework", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
-      settings: [frontendDefaults], expected: { run_cmd: "" } },
+      settings: [frontendDefaults], expected: null },
     { name: "frontend ignores settings of another framework", input: { ...frontendParams, build_cmd: undefined },
       settings: [backendDefaults], expected: { index_dir: "" } },
-    { name: "absent default run uses action fallback", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
+    { name: "absent default run cannot supply a missing command", input: { ...appParams, build_cmd: undefined, run_cmd: undefined },
       settings: [{ framework: "express", build_cmd: "default-build", index_dir: "dist" }],
-      expected: { build_cmd: "default-build", run_cmd: "" } },
+      expected: null },
     { name: "explicit values survive without matching settings", input: { ...frontendParams, index_dir: "public" },
       expected: { build_cmd: "npm run build", index_dir: "public" } },
   ];
@@ -186,9 +309,15 @@ test("create_app resolves deploy defaults per field without mutating input", asy
       const input = structuredClone(scenario.input);
       const before = structuredClone(input);
       const result = await fixture.handler(input);
-      assert.notEqual(result.isError, true);
       assert.deepEqual(input, before);
       const writes = fixture.journal.filter(item => item.method === "post");
+      if (scenario.expected === null) {
+        assert.equal(result.isError, true);
+        assert.match(JSON.stringify(result), /run_cmd/);
+        assert.equal(writes.length, 0);
+        return;
+      }
+      assert.notEqual(result.isError, true);
       assert.equal(writes.length, 1);
       assert.equal(writes[0].url, "/api/v1/apps");
       assert.deepEqual(Object.fromEntries(Object.entries(writes[0].data!).filter(([name]) =>
@@ -358,6 +487,16 @@ test("production tools/list exposes complete explicit annotations", async () => 
     } while (cursor);
     assert.equal(listed.length, Object.keys(tools).length);
     assert.equal(new Set(listed.map(tool => tool.name)).size, listed.length);
+    const appSchema = listed.find(tool => tool.name === createAppTool.name)!.inputSchema;
+    const properties = appSchema.properties as Record<string, { type?: string; description?: string; default?: unknown }>;
+    assert.deepEqual(Object.keys(properties).sort(), Object.keys(createAppTool.inputSchema).sort());
+    assert.deepEqual([...(appSchema.required ?? [])].sort(), ["type", "provider_id", "repository_id", "repository_url",
+      "preset_id", "framework", "commit_sha", "branch_name", "name", "build_cmd"].sort());
+    assert.equal(properties.run_cmd.type, "string");
+    assert.equal(Object.hasOwn(properties.run_cmd, "default"), false);
+    assert.match(properties.run_cmd.description!, /frontend/);
+    assert.match(properties.run_cmd.description!, /backend/);
+    assert.match(properties.run_cmd.description!, /по умолчанию/);
     for (const key of Object.keys(tools) as (keyof typeof tools)[]) {
       assert.deepEqual(listed.find(tool => tool.name === tools[key].name)?.annotations,
         { title: tools[key].title, ...toolAnnotations[key] });

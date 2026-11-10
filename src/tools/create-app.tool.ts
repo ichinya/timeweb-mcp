@@ -116,8 +116,9 @@ const inputSchema = {
     .optional(),
 
   run_cmd: z
-    .string().describe(`Команда для запуска. Использовать ресурс ${ResourceNames.DEPLOY_SETTINGS} для получения настроек по умолчанию для конкретного фреймворка. ОБЯЗАТЕЛЬНО для backend приложений`)
-    .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ для backend приложений - команда запуска"),
+    .string()
+    .optional()
+    .describe(`Команда запуска: frontend не использует это поле; backend требует строку явно либо из настроек фреймворка по умолчанию (${ResourceNames.DEPLOY_SETTINGS}). Явная пустая строка сохраняется.`),
 
   system_dependencies: z
     .array(z.string()).describe("Системные зависимости. АВТОМАТИЧЕСКИ определить по фреймворку и структуре проекта, если нужно.")
@@ -136,6 +137,9 @@ const selectionSchema = z.object({ provider_id: inputSchema.provider_id, reposit
 
 export const createAppHandler = (client: AppClient = appsApiClient) => async (params: CreateAppParams) => {
   try {
+    if (!inputSchema.run_cmd.safeParse(params.run_cmd).success) {
+      return createToolErrorResponse("❌ run_cmd должен быть строкой либо отсутствовать. Создание не отправлено.");
+    }
     if (!selectionSchema.safeParse(params).success) {
       return createToolErrorResponse("❌ Некорректные параметры выбора провайдера, репозитория или тарифа.");
     }
@@ -188,6 +192,9 @@ export const createAppHandler = (client: AppClient = appsApiClient) => async (pa
       run_cmd: params.run_cmd !== undefined ? params.run_cmd : deploySetting?.run_cmd,
       index_dir: params.index_dir !== undefined ? params.index_dir : deploySetting?.index_dir,
     };
+    if (params.type === AppTypes.BACKEND && typeof appParams.run_cmd !== "string") {
+      return createToolErrorResponse("❌ Для backend укажите строку run_cmd либо настройку фреймворка с командой запуска по умолчанию. Создание не отправлено.");
+    }
 
     const app = await createAppAction(appParams, client);
 
