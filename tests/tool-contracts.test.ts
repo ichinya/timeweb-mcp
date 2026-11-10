@@ -1,6 +1,6 @@
 import "./network-guard";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { mock, test } from "node:test";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
@@ -9,6 +9,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { SshKeysApiClient } from "../src/api/ssh-keys";
 import { AppsApiClient } from "../src/api/apps";
+import { ServersApiClient } from "../src/api/servers";
+import { DomainsApiClient } from "../src/api/domains";
+import { RequestOptions } from "../src/api/client";
+import { serversApiClient, domainsApiClient } from "../src/api";
+import { listServersAction, listServersPageAction } from "../src/actions/list-servers.action";
+import { listDomainsAction, listDomainsPageAction } from "../src/actions/list-domains.action";
+import { listServersHandler, listServersTool } from "../src/tools/list-servers.tool";
+import { listDomainsHandler, listDomainsTool } from "../src/tools/list-domains.tool";
+import { PageParams } from "../src/pagination";
 import { ServerException } from "../src/exceptions/server.exception";
 import { createSshKeyHandler, createSshKeyTool } from "../src/tools/create-ssh-key.tool";
 import { createAppHandler, createAppTool } from "../src/tools/create-app.tool";
@@ -19,7 +28,7 @@ import { checkDomainHandler, checkDomainTool } from "../src/tools/check-domain.t
 import { deleteServerHandler, deleteServerTool } from "../src/tools/delete-server.tool";
 import { listSshKeysHandler, listSshKeysTool } from "../src/tools/list-ssh-keys.tool";
 import { normalizeRepositoryUrl } from "../src/vcs-repository";
-import { wrapRequestHandler } from "../src/api/request-context";
+import { runRequestContext, wrapRequestHandler } from "../src/api/request-context";
 import { registerProjectTools } from "../src/register-tools";
 import { toolAnnotations } from "../src/tool-annotations";
 import * as tools from "../src/tools";
@@ -39,6 +48,288 @@ async function connect(server: McpServer) {
   return { client, close: async () => { await client.close(); await server.close(); } };
 }
 const key = { id: 7, name: "offline", body: "ssh-ed25519 offline", created_at: "2026-01-01T00:00:00Z", used_by: [], is_default: false };
+
+type Collection = "servers" | "domains";
+const pageItem = { id: 7, name: "offline-server", status: "on", cpu: 1, ram: 1024, location: "ru-1",
+  fqdn: "offline.example", domain_status: "active", expiration: "2027-01-01", is_autoprolong_enabled: false };
+function pageFixture(kind: Collection, reply: (config: InternalAxiosRequestConfig) => unknown | Promise<unknown>) {
+  const journal: { method: string; url: string }[] = [];
+  const options = { token: "offline-dummy", adapter: async (config: InternalAxiosRequestConfig) => {
+    journal.push({ method: config.method!, url: config.url! });
+    return response(config, await reply(config));
+  } };
+  const servers = new ServersApiClient(options);
+  const domains = new DomainsApiClient(options);
+  return { journal, servers, domains,
+    tool: kind === "servers" ? listServersTool : listDomainsTool,
+    page: (params?: PageParams, request?: RequestOptions) => kind === "servers" ?
+      servers.listServersPage(params, request) : domains.listDomainsPage(params, request),
+    legacy: () => kind === "servers" ? servers.listServers() : domains.listDomains(),
+    handler: kind === "servers" ? listServersHandler(params => listServersPageAction(params, servers)) :
+      listDomainsHandler(params => listDomainsPageAction(params, domains)),
+  };
+}
+async function callPage(fixture: ReturnType<typeof pageFixture>, input: unknown, via: "handler" | "MCP") {
+  if (via === "handler") return fixture.handler(input as PageParams);
+  const server = new McpServer({ name: "offline-pages", version: "1" });
+  server.registerTool(fixture.tool.name, { inputSchema: fixture.tool.inputSchema },
+    wrapRequestHandler(fixture.tool.name, fixture.handler));
+  const pair = await connect(server);
+  try {
+    return await pair.client.callTool({ name: fixture.tool.name,
+      ...(input === undefined ? {} : { arguments: input as Record<string, unknown> }) });
+  } finally { await pair.close(); }
+}
+
+test("page API keeps totals, query parameters, boundaries and changing collections without implicit requests", async t => {
+  for (const kind of ["servers", "domains"] as const) {
+    await t.test(kind, async () => {
+      for (const params of [undefined, {}, Object.freeze({ limit: undefined, offset: undefined })]) {
+        const fixture = pageFixture(kind, () => ({ [kind]: [pageItem], meta: { total: 101 } }));
+        const page = await fixture.page(params);
+        assert.deepEqual(page, { items: [pageItem], total: 101, limit: 100, offset: 0, nextOffset: 1 });
+        assert.deepEqual(fixture.journal, [{ method: "get", url: `/api/v1/${kind}?limit=100&offset=0` }]);
+      }
+      const scenarios = [
+        { limit: 2, offset: 0, count: 2, total: 5, next: 2 },
+        { limit: 2, offset: 2, count: 2, total: 5, next: 4 },
+        { limit: 2, offset: 4, count: 1, total: 5, next: null },
+        { limit: 2, offset: 2, count: 2, total: 4, next: null },
+        { limit: 3, offset: 2, count: 1, total: 7, next: 3 },
+        { limit: 2, offset: 0, count: 0, total: 0, next: null },
+        { limit: 2, offset: 8, count: 0, total: 5, next: null },
+        { limit: 2, offset: 2, count: 0, total: 5, next: null },
+        { limit: 2, offset: 2, count: 1, total: 1, next: null },
+        { limit: 1, offset: Number.MAX_SAFE_INTEGER - 1, count: 1, total: Number.MAX_SAFE_INTEGER, next: null },
+      ];
+      const fixture = pageFixture(kind, () => {
+        const scenario = scenarios[fixture.journal.length - 1];
+        return { [kind]: Array.from({ length: scenario.count }, (_, index) => ({ ...pageItem, id: scenario.offset + index })),
+          meta: { total: scenario.total } };
+      });
+      for (const scenario of scenarios) {
+        const params = Object.freeze({ limit: scenario.limit, offset: scenario.offset });
+        const before = structuredClone(params);
+        const page = await fixture.page(params);
+        assert.equal(page.total, scenario.total);
+        assert.equal(page.items.length, scenario.count);
+        assert.equal(page.nextOffset, scenario.next);
+        assert.deepEqual(params, before);
+      }
+      assert.deepEqual(fixture.journal, scenarios.map(s => ({ method: "get", url: `/api/v1/${kind}?limit=${s.limit}&offset=${s.offset}` })));
+    });
+  }
+});
+
+test("both page handlers and MCP display totals and continuation without claiming an empty account", async () => {
+  for (const kind of ["servers", "domains"] as const) {
+    for (const via of ["handler", "MCP"] as const) {
+      for (const input of [undefined, {}, Object.freeze({ limit: 2, offset: 3 })] as (PageParams | undefined)[]) {
+        const fixture = pageFixture(kind, () => ({ [kind]: [pageItem], meta: { total: 101 } }));
+        const before = structuredClone(input);
+        const result = await callPage(fixture, input, via);
+        assert.notEqual(result.isError, true);
+        const text = JSON.stringify(result);
+        const limit = input?.limit ?? 100, offset = input?.offset ?? 0;
+        assert.match(text, /получено 1, всего 101/);
+        assert.ok(text.includes(`limit=${limit}, offset=${offset}`));
+        assert.ok(text.includes(`${fixture.tool.name} с limit=${limit}, offset=${offset + 1}`));
+        assert.ok(text.includes(kind === "servers" ? "offline-server" : "offline.example"));
+        assert.deepEqual(input, before);
+        assert.deepEqual(fixture.journal, [{ method: "get", url: `/api/v1/${kind}?limit=${limit}&offset=${offset}` }]);
+      }
+      for (const scenario of [
+        { items: [], total: 0, offset: 0, expected: /На аккаунте нет/ },
+        { items: [], total: 2, offset: 5, expected: /По указанному смещению записей нет/ },
+        { items: [], total: 2, offset: 0, expected: /расходится с total; продолжение остановлено/ },
+        { items: [pageItem], total: 1, offset: 0, expected: /Следующая страница не указана/ },
+        { items: [pageItem], total: 0, offset: 0, expected: /полнота списка не подтверждена/ },
+      ]) {
+        const fixture = pageFixture(kind, () => ({ [kind]: scenario.items, meta: { total: scenario.total } }));
+        const result = await callPage(fixture, { limit: 2, offset: scenario.offset }, via);
+        assert.notEqual(result.isError, true);
+        const text = JSON.stringify(result);
+        assert.match(text, scenario.expected);
+        assert.doesNotMatch(text, /Следующая страница: /);
+        if (scenario.total > 0) assert.doesNotMatch(text, /На аккаунте нет/);
+        assert.equal(fixture.journal.length, 1);
+      }
+    }
+  }
+});
+
+test("invalid page parameters cannot dispatch through the API, injected handler or MCP", async () => {
+  const secret = "DO_NOT_EMIT_PAGE_INPUT";
+  const invalid = [null, secret, true, [], 42, { limit: null }, { offset: null },
+    ...[0, -1, 1.5, 101, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, secret, true, [], { secret }].map(limit => ({ limit })),
+    ...[-1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, secret, true, [], { secret }].map(offset => ({ offset })),
+    { limit: 1, offset: Number.MAX_SAFE_INTEGER }, { offset: Number.MAX_SAFE_INTEGER - 99 }];
+  for (const kind of ["servers", "domains"] as const) {
+    for (const input of invalid) {
+      const fixture = pageFixture(kind, () => { throw new Error("Must not dispatch"); });
+      await assert.rejects(fixture.page(input as PageParams), (error: unknown) => {
+        assert.ok(error instanceof ServerException);
+        assert.equal(error.kind, "local"); assert.equal(error.outcome, "not_sent");
+        assert.equal(error.failure.semantics, "read");
+        assert.ok(!JSON.stringify(error).includes(secret)); return true;
+      });
+      for (const via of ["handler", "MCP"] as const) {
+        let result;
+        try { result = await callPage(fixture, input, via); }
+        catch (error) {
+          // Non-object arguments violate the MCP envelope before tool validation.
+          assert.equal(via, "MCP");
+          assert.ok(input === null || typeof input !== "object" || Array.isArray(input));
+          assert.ok(!String(error).includes(secret));
+          continue;
+        }
+        assert.equal(result.isError, true);
+        assert.ok(!JSON.stringify(result).includes(secret));
+        if (via === "handler") assert.match(JSON.stringify(result), /limit\/offset/);
+      }
+      assert.deepEqual(fixture.journal, []);
+    }
+    let calls = 0;
+    const handler = kind === "servers" ? listServersHandler(async () => { calls++; throw new Error("not called"); }) :
+      listDomainsHandler(async () => { calls++; throw new Error("not called"); });
+    assert.equal((await handler({ limit: 0 })).isError, true);
+    assert.equal(calls, 0, "Handler validates before calling an injected action");
+  }
+});
+
+test("malformed page envelopes are typed read failures without fabricated totals or leaked bodies", async () => {
+  const secret = "DO_NOT_EMIT_PAGE_BODY";
+  for (const kind of ["servers", "domains"] as const) {
+    const invalid: unknown[] = [null, secret, [], {}, { [kind]: [] }, { [kind]: [], meta: null },
+      { [kind]: [], meta: [] }, { [kind]: [], meta: {} }, { [kind]: secret, meta: { total: 1 } },
+      { [kind]: [pageItem, pageItem], meta: { total: 2 } },
+      ...[null, -1, 0.5, secret, true, [], { secret }, Number.MAX_SAFE_INTEGER + 1].map(total => ({ [kind]: [], meta: { total } }))];
+    for (const body of invalid) {
+      const fixture = pageFixture(kind, () => body);
+      await assert.rejects(fixture.page({ limit: 1 }), (error: unknown) => {
+        assert.ok(error instanceof ServerException);
+        assert.equal(error.kind, "invalid_response"); assert.equal(error.outcome, "unknown");
+        assert.equal(error.failure.semantics, "read");
+        assert.equal(error.failure.automaticRetry, false);
+        assert.equal(error.failure.recommendation, "safe_read");
+        assert.ok(!JSON.stringify(error).includes(secret)); return true;
+      });
+      for (const via of ["handler", "MCP"] as const) {
+        const result = await callPage(fixture, { limit: 1 }, via);
+        assert.equal(result.isError, true);
+        assert.match(JSON.stringify(result), /ошибка разбора ответа/);
+        assert.ok(!JSON.stringify(result).includes(secret));
+      }
+      assert.equal(fixture.journal.length, 3, "Exactly one GET for each failed invocation");
+    }
+  }
+});
+
+test("an error on a subsequent page never retries or returns previous page data", async () => {
+  for (const kind of ["servers", "domains"] as const) {
+    for (const via of ["handler", "MCP"] as const) {
+      const fixture = pageFixture(kind, config => {
+        if (config.url!.endsWith("offset=0")) return { [kind]: [{ ...pageItem, name: "FIRST_PAGE_ONLY", fqdn: "FIRST_PAGE_ONLY" }], meta: { total: 2 } };
+        throw new AxiosError("DO_NOT_EMIT_PAGE_HTTP", "ERR_BAD_RESPONSE", config, {}, response(config, { message: "DO_NOT_EMIT_PAGE_HTTP" }, 503));
+      });
+      assert.notEqual((await callPage(fixture, { limit: 1, offset: 0 }, via)).isError, true);
+      const result = await callPage(fixture, { limit: 1, offset: 1 }, via);
+      assert.equal(result.isError, true);
+      assert.doesNotMatch(JSON.stringify(result), /FIRST_PAGE_ONLY|DO_NOT_EMIT_PAGE_HTTP/);
+      assert.match(JSON.stringify(result), /Чтение можно повторить/);
+      await new Promise<void>(resolve => setImmediate(resolve));
+      assert.deepEqual(fixture.journal, [0, 1].map(offset => ({ method: "get", url: `/api/v1/${kind}?limit=1&offset=${offset}` })));
+    }
+  }
+});
+
+test("legacy arrays and actions keep working without page metadata", async () => {
+  for (const kind of ["servers", "domains"] as const) {
+    const fixture = pageFixture(kind, () => ({ [kind]: [pageItem] }));
+    const items = await fixture.legacy();
+    assert.deepEqual(items, [pageItem]);
+    assert.deepEqual(fixture.journal, [{ method: "get", url: `/api/v1/${kind}` }]);
+    const stub = kind === "servers" ? mock.method(serversApiClient, "listServers", async () => fixture.servers.listServers()) :
+      mock.method(domainsApiClient, "listDomains", async () => fixture.domains.listDomains());
+    try {
+      assert.deepEqual(await (kind === "servers" ? listServersAction() : listDomainsAction()), items);
+      assert.equal(fixture.journal.length, 2);
+    } finally { stub.mock.restore(); }
+  }
+});
+
+test("page request cancellation remains a typed read and cannot affect a sibling", async () => {
+  for (const kind of ["servers", "domains"] as const) {
+    let start!: () => void;
+    const started = new Promise<void>(resolve => { start = resolve; });
+    const fixture = pageFixture(kind, config => {
+      if (config.url!.endsWith("offset=0")) { start(); return new Promise<never>(() => {}); }
+      return { [kind]: [pageItem], meta: { total: 2 } };
+    });
+    const pre = new AbortController(); pre.abort();
+    await assert.rejects(fixture.page(undefined, { signal: pre.signal }), (error: unknown) => {
+      assert.ok(error instanceof ServerException); assert.equal(error.kind, "cancelled");
+      assert.equal(error.outcome, "not_sent"); assert.equal(error.failure.semantics, "read"); return true;
+    });
+    assert.equal(fixture.journal.length, 0);
+    const upstream = new AbortController();
+    const explicit = new AbortController();
+    const pending = assert.rejects(runRequestContext<unknown>(fixture.tool.name, upstream.signal,
+      () => fixture.page({ limit: 1 }, { signal: explicit.signal })), (error: unknown) => {
+      assert.ok(error instanceof ServerException); assert.equal(error.kind, "cancelled");
+      assert.equal(error.outcome, "unknown"); assert.equal(error.failure.semantics, "read");
+      assert.equal(error.failure.recommendation, "safe_read"); return true;
+    });
+    await started;
+    const sibling = fixture.page({ limit: 1, offset: 1 });
+    upstream.abort("DO_NOT_EMIT_PAGE_ABORT");
+    await pending;
+    assert.equal((await sibling).items.length, 1);
+    assert.equal(fixture.journal.length, 2);
+  }
+});
+
+test("MCP page cancellation stops its read while another page completes", async () => {
+  for (const kind of ["servers", "domains"] as const) {
+    let start!: () => void, settle!: () => void;
+    const started = new Promise<void>(resolve => { start = resolve; });
+    const settled = new Promise<void>(resolve => { settle = resolve; });
+    const fixture = pageFixture(kind, config => {
+      if (config.url!.endsWith("offset=0")) { start(); return new Promise<never>(() => {}); }
+      return { [kind]: [pageItem], meta: { total: 2 } };
+    });
+    const failures: ServerException[] = [];
+    const read = async (params?: PageParams) => {
+      try { return await fixture.page(params); }
+      catch (error) { assert.ok(error instanceof ServerException); failures.push(error); throw error; }
+      finally { if (params?.offset === 0) settle(); }
+    };
+    // Keep the real tool renderer/action path and capture only the transport failure.
+    const handler = kind === "servers" ? listServersHandler(params => listServersPageAction(params,
+      { listServersPage: async params => await read(params) as Awaited<ReturnType<ServersApiClient["listServersPage"]>> })) :
+      listDomainsHandler(params => listDomainsPageAction(params,
+        { listDomainsPage: async params => await read(params) as Awaited<ReturnType<DomainsApiClient["listDomainsPage"]>> }));
+    const server = new McpServer({ name: "offline-page-cancellation", version: "1" });
+    server.registerTool(fixture.tool.name, { inputSchema: fixture.tool.inputSchema }, wrapRequestHandler(fixture.tool.name, handler));
+    const pair = await connect(server);
+    try {
+      const cancellation = new AbortController();
+      const cancelled = assert.rejects(pair.client.callTool({ name: fixture.tool.name, arguments: { limit: 1, offset: 0 } },
+        undefined, { signal: cancellation.signal }));
+      await started;
+      const sibling = pair.client.callTool({ name: fixture.tool.name, arguments: { limit: 1, offset: 1 } });
+      cancellation.abort();
+      await cancelled;
+      await settled;
+      assert.notEqual((await sibling).isError, true);
+      assert.equal(failures.length, 1);
+      assert.equal(failures[0].kind, "cancelled"); assert.equal(failures[0].outcome, "unknown");
+      assert.equal(failures[0].failure.semantics, "read");
+      assert.equal(failures[0].failure.operation, fixture.tool.name);
+      assert.equal(fixture.journal.length, 2);
+    } finally { await pair.close(); }
+  }
+});
 
 test("SSH list/create/get/update normalize both wire formats and consistent aliases", async () => {
   for (const style of ["underscore", "hyphen", "both"]) {
@@ -497,6 +788,20 @@ test("production tools/list exposes complete explicit annotations", async () => 
     assert.match(properties.run_cmd.description!, /frontend/);
     assert.match(properties.run_cmd.description!, /backend/);
     assert.match(properties.run_cmd.description!, /по умолчанию/);
+    for (const tool of [listServersTool, listDomainsTool]) {
+      const listedTool: { description?: string; inputSchema: { properties?: Record<string, unknown>; required?: string[] } } =
+        listed.find(item => item.name === tool.name)!;
+      const schema = listedTool.inputSchema;
+      const fields = schema.properties as Record<string, { type?: string; minimum?: number; maximum?: number }>;
+      assert.deepEqual(Object.keys(fields).sort(), ["limit", "offset"]);
+      assert.deepEqual(schema.required ?? [], []);
+      assert.equal(fields.limit.type, "integer");
+      assert.equal(fields.limit.minimum, 1); assert.equal(fields.limit.maximum, 100);
+      assert.equal(fields.offset.type, "integer");
+      assert.equal(fields.offset.minimum, 0); assert.equal(fields.offset.maximum, Number.MAX_SAFE_INTEGER);
+      assert.match(listedTool.description!, /одну страницу/);
+      assert.doesNotMatch(listedTool.description!, /список всех/);
+    }
     for (const key of Object.keys(tools) as (keyof typeof tools)[]) {
       assert.deepEqual(listed.find(tool => tool.name === tools[key].name)?.annotations,
         { title: tools[key].title, ...toolAnnotations[key] });

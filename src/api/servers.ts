@@ -1,4 +1,5 @@
 import { BaseApiClient, RequestOptions } from "./client";
+import { decodePage, normalizePageParams, Page, PageParams } from "../pagination";
 import { Server } from "../types/server.type";
 import { ServerLog } from "../types/server-log.type";
 import { ServerBackup } from "../types/server-backup.type";
@@ -60,11 +61,17 @@ export type ServerDiskBackupAction = "restore" | "mount" | "unmount";
 
 export class ServersApiClient extends BaseApiClient {
   /**
-   * Получает список всех серверов аккаунта
+   * Получает массив серверов первой страницы (legacy-контракт без metadata).
    */
   async listServers(): Promise<Server[]> {
     const response = await this.get<ListServersResponseDto>("/api/v1/servers");
     return response.servers;
+  }
+
+  async listServersPage(params?: PageParams, options?: RequestOptions): Promise<Page<Server>> {
+    const page = normalizePageParams(params);
+    const response = await this.get<unknown>(`/api/v1/servers?limit=${page.limit}&offset=${page.offset}`, options);
+    return decodePage<Server>(response, "servers", page);
   }
 
   /**

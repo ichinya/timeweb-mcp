@@ -1,4 +1,5 @@
-import { BaseApiClient } from "./client";
+import { BaseApiClient, RequestOptions } from "./client";
+import { decodePage, normalizePageParams, Page, PageParams } from "../pagination";
 import { Domain, DomainSubdomain } from "../types/domain.type";
 import { DnsRecord, DnsRecordV2 } from "../types/dns-record.type";
 import { DomainNameServer } from "../types/domain-name-server.type";
@@ -35,11 +36,17 @@ import {
 
 export class DomainsApiClient extends BaseApiClient {
   /**
-   * Получает список всех доменов аккаунта
+   * Получает массив доменов первой страницы (legacy-контракт без metadata).
    */
   async listDomains(): Promise<Domain[]> {
     const response = await this.get<ListDomainsResponseDto>("/api/v1/domains");
     return response.domains;
+  }
+
+  async listDomainsPage(params?: PageParams, options?: RequestOptions): Promise<Page<Domain>> {
+    const page = normalizePageParams(params);
+    const response = await this.get<unknown>(`/api/v1/domains?limit=${page.limit}&offset=${page.offset}`, options);
+    return decodePage<Domain>(response, "domains", page);
   }
 
   /**
