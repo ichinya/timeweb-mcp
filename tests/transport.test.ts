@@ -1,6 +1,7 @@
 import { networkAttempts } from "./network-guard";
 import "./tool-contracts.test";
 import "./knowledge-bases.test";
+import "./api-compatibility.test";
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
 import { getEventListeners } from "node:events";

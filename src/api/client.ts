@@ -25,7 +25,7 @@ export class BaseApiClient {
   constructor(options: ApiClientOptions = {}) {
     this.token = options.token ?? process.env.TIMEWEB_TOKEN ?? "";
     this.now = options.now ?? Date.now;
-    this.baseUrl = "https://timeweb.cloud";
+    this.baseUrl = "https://api.timeweb.cloud";
 
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,

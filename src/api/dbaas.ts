@@ -313,7 +313,8 @@ export class DbaasApiClient extends BaseApiClient {
   ): Promise<DeleteDatabaseClusterResponseDto> {
     const qs = this.buildQuery({ hash, code });
     return await this.delete<DeleteDatabaseClusterResponseDto>(
-      `/api/v1/databases/${clusterId}${qs}`
+      `/api/v1/databases/${clusterId}${qs}`,
+      { semantics: "mutation" }
     );
   }
 

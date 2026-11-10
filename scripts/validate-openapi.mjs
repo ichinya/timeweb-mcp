@@ -1,4 +1,6 @@
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { checkApiRoutes } from './check-api-routes.mjs';
 
 const specPath = new URL('../specs/openapi.json', import.meta.url);
 const spec = JSON.parse(await readFile(specPath, 'utf8'));
@@ -115,6 +117,12 @@ const summary = [
   `${Object.keys(spec.components?.schemas ?? {}).length} schemas`,
   `${internalRefCount} internal references`,
 ].join(', ');
+
+const routeCheck = checkApiRoutes(fileURLToPath(new URL('..', import.meta.url)));
+if (!routeCheck.ok) errors.push(`API route compatibility failed: ${JSON.stringify({
+  unknown: routeCheck.unknown, mismatches: routeCheck.mismatches, staleExceptions: routeCheck.staleExceptions,
+})}`);
+console.log(`API route compatibility: ${routeCheck.routes.length} routes, ${routeCheck.exceptionCount} explicit legacy exceptions, ${routeCheck.unknown.length} unknown`);
 
 if (errors.length > 0) {
   console.error(`OpenAPI validation failed (${summary}):`);
