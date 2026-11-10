@@ -1,28 +1,17 @@
-import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { ResourceNames } from "../types/resource-names.enum";
-import { createResourceResponse } from "../utils";
 import { getVpcsAction } from "../actions/get-vpcs.action";
-import { ToolNames } from "../types/tool-names.enum";
+import { ResourceNames } from "../types/resource-names.enum";
+import { jsonResourceHandler } from "../resource-handler";
+
+export const getVpcsHandler = (load: () => Promise<unknown> = getVpcsAction) =>
+  jsonResourceHandler(() => load());
 
 export const getVpcsResource = {
   name: ResourceNames.GET_VPCS,
   uri: "vpc://all",
   template: new ResourceTemplate("vpc://all", { list: undefined }),
   title: "Список VPC пользователя",
-  description:
-    "Список виртуальных частных сетей (VPC) пользователя в Timeweb Cloud",
-  handler: async (uri: URL) => {
-    try {
-      const result = await getVpcsAction();
-
-      if (!result || result.length === 0) {
-        return createResourceResponse(uri.href, `Нет доступных VPC. Создайте первую VPC с помощью tool ${ToolNames.CREATE_VPC}`);
-      }
-
-      return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
-    } catch (error: unknown) {
-    return createResourceResponse(uri.href, formatRequestError(error));
-  }
-  },
+  description: "Список виртуальных частных сетей (VPC) пользователя в Timeweb Cloud",
+  mimeType: "application/json" as const,
+  handler: getVpcsHandler(),
 };

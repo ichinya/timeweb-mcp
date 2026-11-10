@@ -2,10 +2,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerProjectTools } from "./register-tools";
-import * as resources from "./resources";
+import { registerProjectResources } from "./register-resources";
 import * as prompts from "./prompts";
 import { getVersion } from "./utils";
-import { wrapRequestHandler } from "./api/request-context";
 import { formatRequestError } from "./exceptions/server.exception";
 
 const startServer = async () => {
@@ -26,21 +25,7 @@ const startServer = async () => {
 
   registerProjectTools(server);
 
-  Object.values(resources).forEach((resource: any) => {
-    const uriOrTemplate = resource.uri.includes("{")
-      ? resource.template
-      : resource.uri;
-
-    server.registerResource(
-      resource.name,
-      uriOrTemplate,
-      {
-        title: resource.title,
-        description: resource.description,
-      },
-      wrapRequestHandler(resource.name, (...args: unknown[]) => resource.handler(...args))
-    );
-  });
+  registerProjectResources(server);
 
   Object.values(prompts).forEach((prompt: any) => {
     server.registerPrompt(prompt.name, prompt.config, prompt.handler);

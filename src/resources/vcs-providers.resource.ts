@@ -1,8 +1,10 @@
-import { formatRequestError } from "../exceptions/server.exception";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getVcsProvidersAction } from "../actions/get-vcs-providers.action";
 import { ResourceNames } from "../types/resource-names.enum";
-import { createResourceResponse } from "../utils";
+import { jsonResourceHandler, resourceArray } from "../resource-handler";
+
+export const vcsProvidersHandler = (load: () => Promise<unknown> = getVcsProvidersAction) =>
+  jsonResourceHandler(() => load(), value => resourceArray(value, true));
 
 export const vcsProvidersResource = {
   name: ResourceNames.VCS_PROVIDERS,
@@ -10,20 +12,6 @@ export const vcsProvidersResource = {
   template: new ResourceTemplate("vcs-provider://all", { list: undefined }),
   title: "Список доступных VCS провайдеров",
   description: "Список доступных VCS провайдеров в Timeweb Cloud",
-  handler: async (uri: URL) => {
-    try {
-      const result = await getVcsProvidersAction();
-
-      if (!result || result.length === 0) {
-        return createResourceResponse(
-          uri.href,
-          "Нет доступных VCS провайдеров"
-        );
-      }
-
-      return createResourceResponse(uri.href, JSON.stringify(result, null, 2));
-    } catch (error: unknown) {
-    return createResourceResponse(uri.href, formatRequestError(error));
-  }
-  },
+  mimeType: "application/json" as const,
+  handler: vcsProvidersHandler(),
 };

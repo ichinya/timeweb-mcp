@@ -3,7 +3,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { DatabaseTypes } from "./types/database-types.enum";
 import { PresetDatabaseTypes } from "./types/preset-database-types.enum";
-import { formatRequestError } from "./exceptions/server.exception";
+import { formatRequestError, ServerException } from "./exceptions/server.exception";
 
 export const getVersion = (): string => {
   try {
@@ -35,9 +35,16 @@ export const createToolErrorResponse = (text: string) => ({
   isError: true as const,
 });
 
-export const createResourceResponse = (uri: string, text: string) => ({
-  contents: [{ uri, text, mimeType: "application/json" }],
-});
+export const createResourceResponse = (uri: string, data: unknown) => {
+  try {
+    const text = JSON.stringify(data, null, 2);
+    if (text === undefined) throw new Error();
+    return { contents: [{ uri, text, mimeType: "application/json" as const }] };
+  } catch {
+    // Never retain a serializer exception: it may contain the provider payload.
+    throw new ServerException({ kind: "invalid_response", outcome: "unknown", semantics: "read" });
+  }
+};
 
 export const getPresetDatabaseType = (type: DatabaseTypes) => {
   switch (type) {

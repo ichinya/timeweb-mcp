@@ -1,12 +1,28 @@
 import "./network-guard";
 import assert from "node:assert/strict";
 import { mock, test } from "node:test";
+import { inspect } from "node:util";
+import { getEventListeners } from "node:events";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
+import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
+import * as resources from "../src/resources";
+import { allowedPresetsHandler } from "../src/resources/allowed-presets.resource";
+import { databasePresetsHandler } from "../src/resources/database-presets.resource";
+import { deploySettingsHandler } from "../src/resources/deploy-settings.resource";
+import { getVpcsHandler } from "../src/resources/get-vpcs.resource";
+import { vcsProvidersHandler } from "../src/resources/vcs-providers.resource";
+import { vcsProviderRepositoriesHandler } from "../src/resources/vcs-provider-repositories.resource";
+import { registerProjectResources } from "../src/register-resources";
+import { wrapResourceHandler } from "../src/resource-handler";
+import { ResourceNames } from "../src/types/resource-names.enum";
+import { getAllowedPresetsAction } from "../src/actions/get-allowed-presets.action";
+import { getDeploySettingsAction } from "../src/actions/get-deploy-settings.action";
+import { getVcsProviderRepositoriesAction } from "../src/actions/get-vcs-provider-repositories.action";
 import { SshKeysApiClient } from "../src/api/ssh-keys";
 import { AppsApiClient } from "../src/api/apps";
 import { ServersApiClient } from "../src/api/servers";
@@ -28,7 +44,7 @@ import { checkDomainHandler, checkDomainTool } from "../src/tools/check-domain.t
 import { deleteServerHandler, deleteServerTool } from "../src/tools/delete-server.tool";
 import { listSshKeysHandler, listSshKeysTool } from "../src/tools/list-ssh-keys.tool";
 import { normalizeRepositoryUrl } from "../src/vcs-repository";
-import { runRequestContext, wrapRequestHandler } from "../src/api/request-context";
+import { getRequestContext, runRequestContext, wrapRequestHandler } from "../src/api/request-context";
 import { registerProjectTools } from "../src/register-tools";
 import { toolAnnotations } from "../src/tool-annotations";
 import * as tools from "../src/tools";
@@ -36,7 +52,7 @@ import { CreateAppParams } from "../src/types/create-app-params.type";
 import { AppTypes } from "../src/types/app-types.enum";
 import { FrameworksBackend, FrameworksFrontend } from "../src/types/app-frameworks.type";
 import { DeploySettingsDto } from "../src/types/dto/get-deploy-settings-response.dto";
-import { createToolResponse } from "../src/utils";
+import { createResourceResponse, createToolResponse } from "../src/utils";
 
 function response(config: InternalAxiosRequestConfig, data: unknown, status = 200): AxiosResponse {
   return { config, data, status, statusText: "offline", headers: { "content-type": "application/json" } };
@@ -49,7 +65,278 @@ async function connect(server: McpServer) {
 }
 const key = { id: 7, name: "offline", body: "ssh-ed25519 offline", created_at: "2026-01-01T00:00:00Z", used_by: [], is_default: false };
 
+function resourceFixture(load: (name: string, provider?: string) => Promise<unknown>) {
+  return {
+    allowedPresetsResource: { ...resources.allowedPresetsResource,
+      handler: allowedPresetsHandler(() => load(ResourceNames.ALLOWED_PRESETS)) },
+    databasePresetsResource: { ...resources.databasePresetsResource,
+      handler: databasePresetsHandler(() => load(ResourceNames.DATABASE_PRESETS)) },
+    deploySettingsResource: { ...resources.deploySettingsResource,
+      handler: deploySettingsHandler(() => load(ResourceNames.DEPLOY_SETTINGS)) },
+    getVpcsResource: { ...resources.getVpcsResource,
+      handler: getVpcsHandler(() => load(ResourceNames.GET_VPCS)) },
+    vcsProvidersResource: { ...resources.vcsProvidersResource,
+      handler: vcsProvidersHandler(() => load(ResourceNames.VCS_PROVIDERS)) },
+    vcsProviderRepositoriesResource: { ...resources.vcsProviderRepositoriesResource,
+      handler: vcsProviderRepositoriesHandler(id => load(ResourceNames.VCS_PROVIDER_REPOSITORIES, id)) },
+  };
+}
+const resourceProvider = "11111111-1111-4111-8111-111111111111";
+const resourceUri = (uri: string) => uri.replace("{provider_id}", resourceProvider);
+function assertResourceJSON(result: Awaited<ReturnType<Client["readResource"]>>, uri: string, expected: unknown) {
+  assert.equal(Object.hasOwn(result, "isError"), false);
+  assert.equal(result.contents.length, 1);
+  const content = result.contents[0];
+  assert.equal(content.uri, uri);
+  assert.equal(content.mimeType, "application/json");
+  assert.ok("text" in content);
+  assert.equal(typeof content.text, "string");
+  assert.deepEqual(JSON.parse(content.text), expected);
+}
+
+test("all six real resource handlers and MCP reads expose parseable data and empty JSON", async () => {
+  for (const empty of [false, true]) {
+    const calls: { name: string; provider?: string; operation?: string }[] = [];
+    const value = (name: string) => name === ResourceNames.ALLOWED_PRESETS ?
+      { frontend_presets: empty ? [] : [{ id: 1 }], backend_presets: empty ? [] : [{ id: 2 }] } :
+      empty ? [] : [{ id: 7, name: "offline", nested: { ok: true } }];
+    const definitions = resourceFixture(async (name, provider) => {
+      calls.push({ name, provider, operation: getRequestContext()?.operation }); return value(name);
+    });
+    const server = new McpServer({ name: "offline-resources", version: "1" });
+    registerProjectResources(server, definitions);
+    const pair = await connect(server);
+    try {
+      const listed = await pair.client.listResources();
+      const templates = await pair.client.listResourceTemplates();
+      assert.deepEqual(listed.resources.map(item => item.uri).sort(), Object.values(resources)
+        .filter(item => !item.uri.includes("{" )).map(item => item.uri).sort());
+      assert.equal(templates.resourceTemplates.length, 1);
+      assert.equal(templates.resourceTemplates[0].uriTemplate, resources.vcsProviderRepositoriesResource.uri);
+      for (const item of [...listed.resources, ...templates.resourceTemplates]) {
+        const definition = Object.values(resources).find(resource => resource.name === item.name)!;
+        assert.equal(item.mimeType, "application/json");
+        assert.equal(item.title, definition.title); assert.equal(item.description, definition.description);
+      }
+      for (const definition of Object.values(definitions)) {
+        const uri = resourceUri(definition.uri);
+        const direct = await Reflect.apply(definition.handler, undefined, [new URL(uri), { provider_id: resourceProvider }]);
+        assertResourceJSON(direct, uri, value(definition.name));
+        const wire = await pair.client.readResource({ uri });
+        assertResourceJSON(wire, uri, value(definition.name));
+        assert.equal(calls[calls.length - 1].operation, definition.name);
+      }
+      assert.equal(calls.length, 12);
+      const repositoryCalls = calls.filter(call => call.name === ResourceNames.VCS_PROVIDER_REPOSITORIES);
+      assert.deepEqual(repositoryCalls.map(call => call.provider), [resourceProvider, resourceProvider]);
+    } finally { await pair.close(); }
+  }
+});
+
+test("resource top-level validation preserves only the agreed optional undefined behavior", async () => {
+  const invalid: unknown[] = [undefined, null, false, 0, "DO_NOT_EMIT_RESOURCE_DATA", {}, { frontend_presets: [] },
+    { frontend_presets: [], backend_presets: null }];
+  for (const value of invalid) {
+    const definitions = resourceFixture(async () => value);
+    const server = new McpServer({ name: "offline-resource-validation", version: "1" });
+    registerProjectResources(server, definitions);
+    const pair = await connect(server);
+    try {
+      for (const definition of Object.values(definitions)) {
+        const uri = resourceUri(definition.uri);
+        const direct = () => Reflect.apply(definition.handler, undefined, [new URL(uri), { provider_id: resourceProvider }]);
+        if (value === undefined && definition.name === ResourceNames.VCS_PROVIDERS) {
+          assertResourceJSON(await direct(), uri, []);
+          assertResourceJSON(await pair.client.readResource({ uri }), uri, []);
+        } else {
+          await assert.rejects(direct, (error: unknown) => {
+            assert.ok(error instanceof ServerException); assert.equal(error.kind, "invalid_response"); return true;
+          });
+          await assert.rejects(pair.client.readResource({ uri }), (error: unknown) => {
+            assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InternalError);
+            assert.doesNotMatch(inspect(error), /DO_NOT_EMIT_RESOURCE_DATA/); return true;
+          });
+        }
+      }
+    } finally { await pair.close(); }
+  }
+});
+
+test("resource JSON serialization fails safely and never double encodes data", async () => {
+  const secret = "DO_NOT_EMIT_SERIALIZER";
+  const cycle: Record<string, unknown> = { secret }; cycle.self = cycle;
+  const hostile = { toJSON() { throw new Error(secret); } };
+  for (const input of [undefined, () => secret, Symbol(secret), BigInt(1), cycle, hostile]) {
+    assert.throws(() => createResourceResponse("vpc://all", input), (error: unknown) => {
+      assert.ok(error instanceof ServerException); assert.equal(error.kind, "invalid_response");
+      assert.ok(![error.message, error.stack, JSON.stringify(error), inspect(error)].join(" ").includes(secret)); return true;
+    });
+  }
+  const definitions = resourceFixture(async name => name === ResourceNames.ALLOWED_PRESETS ?
+    { frontend_presets: [hostile], backend_presets: [] } : [cycle]);
+  const server = new McpServer({ name: "offline-resource-serialization", version: "1" });
+  registerProjectResources(server, definitions);
+  const pair = await connect(server);
+  try {
+    for (const definition of Object.values(definitions)) {
+      await assert.rejects(pair.client.readResource({ uri: resourceUri(definition.uri) }), (error: unknown) => {
+        assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InternalError);
+        assert.ok(!inspect(error).includes(secret)); return true;
+      });
+    }
+  } finally { await pair.close(); }
+  const data = { nested: [1, "text", null] };
+  assertResourceJSON(createResourceResponse("vpc://all", data), "vpc://all", data);
+});
+
+test("dependency exceptions cannot escape resource reads as successful text or arbitrary McpError", async () => {
+  const secret = "DO_NOT_EMIT_RESOURCE_ERROR";
+  for (const failure of [new Error(secret, { cause: secret }), new McpError(ErrorCode.InvalidParams, secret, { secret }),
+    new ServerException({ kind: "server", outcome: "unknown", semantics: "read", status: 503 }), secret]) {
+    const definitions = resourceFixture(async () => { throw failure; });
+    const server = new McpServer({ name: "offline-resource-errors", version: "1" });
+    registerProjectResources(server, definitions);
+    const pair = await connect(server);
+    try {
+      for (const definition of Object.values(definitions)) {
+        await assert.rejects(Reflect.apply(definition.handler, undefined,
+          [new URL(resourceUri(definition.uri)), { provider_id: resourceProvider }]), (error: unknown) => {
+          assert.ok(error instanceof ServerException);
+          assert.ok(!inspect(error).includes(secret)); return true;
+        });
+        await assert.rejects(pair.client.readResource({ uri: resourceUri(definition.uri) }), (error: unknown) => {
+          assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InternalError);
+          assert.equal(error.data, undefined); assert.ok(!inspect(error).includes(secret)); return true;
+        });
+      }
+    } finally { await pair.close(); }
+  }
+});
+
+test("resource provider parameter errors are controlled InvalidParams before loading", async () => {
+  let calls = 0;
+  const handler = vcsProviderRepositoriesHandler(async () => { calls++; return []; });
+  const wrapped = wrapResourceHandler(ResourceNames.VCS_PROVIDER_REPOSITORIES,
+    (uri: URL, vars: Record<string, string | string[]>) => handler(uri, vars));
+  for (const vars of [{}, { provider_id: "" }, { provider_id: [] }, { provider_id: ["DO_NOT_EMIT_PROVIDER"] },
+    { provider_id: null }, { provider_id: false }, { provider_id: 42 }]) {
+    await assert.rejects(wrapped(new URL("vcs-provider://offline/repositories"), vars as Record<string, string | string[]>), (error: unknown) => {
+      assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InvalidParams);
+      assert.match(error.message, /provider_id/); assert.ok(!inspect(error).includes("DO_NOT_EMIT_PROVIDER")); return true;
+    });
+  }
+  assert.equal(calls, 0);
+  // Force the invalid local argument behind the actual production registration as well.
+  const definitions = resourceFixture(async () => { calls++; return []; });
+  definitions.vcsProviderRepositoriesResource.handler = uri => handler(uri, {});
+  const server = new McpServer({ name: "offline-resource-params", version: "1" });
+  registerProjectResources(server, definitions);
+  const pair = await connect(server);
+  try {
+    await assert.rejects(pair.client.readResource({ uri: "vcs-provider://offline/repositories" }), (error: unknown) => {
+      assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InvalidParams); return true;
+    });
+    assert.equal(calls, 0);
+  } finally { await pair.close(); }
+});
+
 type Collection = "servers" | "domains";
+test("resource errors sanitize real HTTP failures and production action logging", async () => {
+  const secret = "DO_NOT_EMIT_RESOURCE_HTTP";
+  const logs: string[] = [];
+  const logger = mock.method(console, "error", (...args: unknown[]) => { logs.push(inspect(args)); });
+  let requests = 0;
+  const api = new AppsApiClient({ token: secret, adapter: async config => {
+    requests++;
+    throw new AxiosError(secret, "ERR_BAD_RESPONSE", config, { body: secret },
+      response(config, { message: secret, error_code: secret, response_id: secret }, 503));
+  } });
+  const definitions = resourceFixture(async (name, provider) => {
+    if (name === ResourceNames.ALLOWED_PRESETS) return getAllowedPresetsAction(api);
+    if (name === ResourceNames.DEPLOY_SETTINGS) return getDeploySettingsAction(api);
+    if (name === ResourceNames.VCS_PROVIDER_REPOSITORIES) return getVcsProviderRepositoriesAction(provider!, api);
+    return [];
+  });
+  const server = new McpServer({ name: "offline-resource-http", version: "1" });
+  registerProjectResources(server, definitions);
+  const pair = await connect(server);
+  try {
+    for (const definition of [definitions.allowedPresetsResource, definitions.deploySettingsResource, definitions.vcsProviderRepositoriesResource]) {
+      await assert.rejects(pair.client.readResource({ uri: resourceUri(definition.uri) }), (error: unknown) => {
+        assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InternalError);
+        assert.match(error.message, /Чтение можно повторить/);
+        assert.ok(![error.message, error.stack, inspect(error), JSON.stringify(error)].join(" ").includes(secret)); return true;
+      });
+    }
+    assert.equal(requests, 3); assert.equal(logs.length, 3);
+    assert.ok(!logs.join("\n").includes(secret));
+  } finally { logger.mock.restore(); await pair.close(); }
+});
+
+test("resource scope rejects pre-abort and detached dispatch and releases signal listeners", async () => {
+  const controller = new AbortController(); controller.abort("DO_NOT_EMIT_ABORT");
+  let calls = 0;
+  const wrapped = wrapResourceHandler(ResourceNames.GET_VPCS, async (uri: URL, _extra?: { signal: AbortSignal }) => {
+    calls++; return createResourceResponse(uri.href, []);
+  });
+  await assert.rejects(wrapped(new URL("vpc://all"), { signal: controller.signal }), (error: unknown) => {
+    assert.ok(error instanceof McpError); assert.equal(error.code, ErrorCode.InternalError);
+    assert.match(error.message, /до отправки/); assert.ok(!inspect(error).includes("DO_NOT_EMIT_ABORT")); return true;
+  });
+  assert.equal(calls, 0);
+  assert.equal(getEventListeners(controller.signal, "abort").length, 0);
+  let go!: () => void;
+  const gate = new Promise<void>(resolve => { go = resolve; });
+  const journal: string[] = [];
+  const api = new ServersApiClient({ token: "offline", adapter: async config => { journal.push(config.url!); return response(config, { servers: [] }); } });
+  let detached!: Promise<void>;
+  const active = new AbortController();
+  const closeScope = wrapResourceHandler(ResourceNames.GET_VPCS, async (uri: URL, _extra?: { signal: AbortSignal }) => {
+    detached = assert.rejects(gate.then(() => api.listServers()), (error: unknown) => {
+      assert.ok(error instanceof ServerException); assert.equal(error.outcome, "not_sent");
+      assert.equal(error.failure.reason, "scope_closed"); return true;
+    });
+    return createResourceResponse(uri.href, []);
+  });
+  assertResourceJSON(await closeScope(new URL("vpc://all"), { signal: active.signal }), "vpc://all", []);
+  go(); await detached;
+  assert.deepEqual(journal, []);
+  assert.equal(getEventListeners(active.signal, "abort").length, 0);
+  assert.equal(getRequestContext(), undefined);
+});
+
+test("MCP resource cancellation isolates a real HTTP read from a sibling", async () => {
+  let start!: () => void, settle!: () => void;
+  const started = new Promise<void>(resolve => { start = resolve; });
+  const settled = new Promise<void>(resolve => { settle = resolve; });
+  const journal: string[] = [];
+  const failures: ServerException[] = [];
+  const api = new ServersApiClient({ token: "offline", adapter: async config => {
+    journal.push(getRequestContext()?.operation ?? "missing");
+    if (getRequestContext()?.operation === ResourceNames.GET_VPCS) { start(); return new Promise<never>(() => {}); }
+    return response(config, { servers: [] });
+  } });
+  const definitions = resourceFixture(async name => {
+    try { return await api.listServers(); }
+    catch (error) { assert.ok(error instanceof ServerException); failures.push(error); throw error; }
+    finally { if (name === ResourceNames.GET_VPCS) settle(); }
+  });
+  const server = new McpServer({ name: "offline-resource-cancellation", version: "1" });
+  registerProjectResources(server, definitions);
+  const pair = await connect(server);
+  try {
+    const controller = new AbortController();
+    const cancelled = assert.rejects(pair.client.readResource({ uri: "vpc://all" }, { signal: controller.signal }));
+    await started;
+    const sibling = pair.client.readResource({ uri: "deploy-settings://all" });
+    controller.abort(); await cancelled; await settled;
+    assertResourceJSON(await sibling, "deploy-settings://all", []);
+    assert.equal(failures.length, 1); assert.equal(failures[0].kind, "cancelled");
+    assert.equal(failures[0].outcome, "unknown"); assert.equal(failures[0].failure.semantics, "read");
+    assert.deepEqual(journal, [ResourceNames.GET_VPCS, ResourceNames.DEPLOY_SETTINGS]);
+  } finally { await pair.close(); }
+});
+
 const pageItem = { id: 7, name: "offline-server", status: "on", cpu: 1, ram: 1024, location: "ru-1",
   fqdn: "offline.example", domain_status: "active", expiration: "2027-01-01", is_autoprolong_enabled: false };
 function pageFixture(kind: Collection, reply: (config: InternalAxiosRequestConfig) => unknown | Promise<unknown>) {
