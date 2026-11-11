@@ -202,6 +202,7 @@ npm run inspect
 | `npm run type-check`        | Проверка TypeScript без генерации файлов                               | Windows, macOS, Linux |
 | `npm run build`             | Сборка проекта                                                         | Windows, macOS, Linux |
 | `npm run test:release`      | Проверка логики определения новой версии и релизного тега              | Windows, macOS, Linux |
+| `npm run test:smoke-start`  | Сценарии готовности, timeout, вывода и завершения smoke-процесса        | Windows, macOS, Linux |
 | `npm run test:transport`    | Проверка типов и offline-тесты ошибок API, отмены и потерянного ответа | Windows, macOS, Linux |
 | `npm run smoke`             | Проверка запуска собранного MCP-сервера и чистоты `stdout`             | Windows, macOS, Linux |
 | `npm run verify`            | Полная проверка OpenAPI, релизной логики, TypeScript, сборки и запуска | Windows, macOS, Linux |
@@ -215,6 +216,13 @@ npm run inspect
 [`docs/transport-errors.md`](docs/transport-errors.md). Автоматические повторы API-запросов
 не выполняются. При потере ответа изменение могло завершиться: перед повтором проверьте
 состояние ресурса. Транспортные тесты не используют настоящий токен или cloud-ресурсы.
+
+Startup smoke сохраняет порог готовности 5000 мс и проверку пустого stdout сервера.
+Единственный итог содержит status, readyMs/elapsedMs, PID, exit code/signal,
+счётчики вывода и результат cleanup без содержимого stdout/stderr.
+`spawn_error` с EPERM означает отказ запуска процесса; `timeout` — отсутствие
+готовности в срок. После остановки предусмотрены два интервала cleanup по 1000 мс.
+Измерения и ограничения расследования #31: [docs/smoke-startup.md](docs/smoke-startup.md).
 
 ## Выпуск новой версии
 
