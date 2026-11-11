@@ -12,7 +12,7 @@
     "type-check": "tsc --noEmit",
     "test:release": "node --test scripts/release-version.test.mjs",
     "test:openapi": "node --test scripts/openapi.test.mjs",
-    "test:smoke-start": "node --test scripts/smoke-start.test.mjs",
+    "test:smoke-start": "node --test scripts/smoke-start.test.mjs scripts/startup-config.test.mjs",
     "test:transport": "node scripts/test-transport.mjs",
     "smoke": "node scripts/smoke-start.mjs && node scripts/smoke-mcp.mjs",
     "smoke:startup-series": "node scripts/smoke-start-series.mjs",

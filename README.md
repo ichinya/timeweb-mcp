@@ -219,12 +219,33 @@ npm run inspect
 не выполняются. При потере ответа изменение могло завершиться: перед повтором проверьте
 состояние ресурса. Транспортные тесты не используют настоящий токен или cloud-ресурсы.
 
-Startup smoke сохраняет порог готовности 5000 мс и проверку пустого stdout сервера.
+Startup smoke по умолчанию ждёт готовность 5000 мс и проверяет пустой stdout сервера.
 Единственный итог содержит status, readyMs/elapsedMs, PID, exit code/signal,
 счётчики вывода и результат cleanup без содержимого stdout/stderr.
 `spawn_error` с EPERM означает отказ запуска процесса; `timeout` — отсутствие
 готовности в срок. После остановки предусмотрены два интервала cleanup по 1000 мс.
 Измерения и ограничения расследования #31: [docs/smoke-startup.md](docs/smoke-startup.md).
+
+Для медленного окружения startup smoke и startup-series принимают
+`TIMEWEB_SMOKE_START_TIMEOUT_MS`: целое количество миллисекунд от 1000 до 30000,
+записанное только ASCII-цифрами. Если переменная отсутствует, используется 5000;
+пустая строка, пробелы, знаки, дроби, экспоненциальная запись и значения вне диапазона
+дают один `configuration_error` и ненулевой exit до запуска сервера.
+Исходное ошибочное значение не выводится. Выбранный timeoutMs виден в результате
+и metadata серии. Настройка не меняет API timeout, MCP handshake и сроки cleanup;
+увеличенный срок автоматически в CI не задаётся.
+
+Пример PowerShell с восстановлением прежнего окружения:
+
+```powershell
+$previousTimeout = [Environment]::GetEnvironmentVariable('TIMEWEB_SMOKE_START_TIMEOUT_MS', 'Process')
+try {
+  $env:TIMEWEB_SMOKE_START_TIMEOUT_MS = '10000'
+  npm run smoke
+} finally {
+  [Environment]::SetEnvironmentVariable('TIMEWEB_SMOKE_START_TIMEOUT_MS', $previousTimeout, 'Process')
+}
+```
 
 ## Проверки pull requests и main
 
