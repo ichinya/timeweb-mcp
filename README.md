@@ -202,10 +202,12 @@ npm run inspect
 | `npm run type-check`        | Проверка TypeScript без генерации файлов                               | Windows, macOS, Linux |
 | `npm run build`             | Сборка проекта                                                         | Windows, macOS, Linux |
 | `npm run test:release`      | Проверка логики определения новой версии и релизного тега              | Windows, macOS, Linux |
+| `npm run test:openapi`      | Тесты нормализации OpenAPI, provenance и анализатора маршрутов         | Windows, macOS, Linux |
 | `npm run test:smoke-start`  | Сценарии готовности, timeout, вывода и завершения smoke-процесса        | Windows, macOS, Linux |
 | `npm run test:transport`    | Проверка типов и offline-тесты ошибок API, отмены и потерянного ответа | Windows, macOS, Linux |
 | `npm run smoke`             | Проверка запуска собранного MCP-сервера и чистоты `stdout`             | Windows, macOS, Linux |
-| `npm run verify`            | Полная проверка OpenAPI, релизной логики, TypeScript, сборки и запуска | Windows, macOS, Linux |
+| `npm run smoke:startup-series` | Шесть запусков сервера с измерениями первого и последующих стартов | Windows, macOS, Linux |
+| `npm run verify`            | OpenAPI/маршруты, все тесты, TypeScript, сборка и оба smoke-теста       | Windows, macOS, Linux |
 | `npm run start`             | Запуск `dist/index.js` с загрузкой `.env`                              | Windows, macOS, Linux |
 | `npm run inspect`           | Запуск MCP Inspector                                                   | Windows, macOS, Linux |
 | `npm run clean`             | Удаление `dist`                                                        | Windows, macOS, Linux |
@@ -223,6 +225,27 @@ Startup smoke сохраняет порог готовности 5000 мс и п
 `spawn_error` с EPERM означает отказ запуска процесса; `timeout` — отсутствие
 готовности в срок. После остановки предусмотрены два интервала cleanup по 1000 мс.
 Измерения и ограничения расследования #31: [docs/smoke-startup.md](docs/smoke-startup.md).
+
+## Проверки pull requests и main
+
+Workflow [Verify](.github/workflows/verify.yml) запускается для всех pull requests
+и каждого push в `main`, включая обычные изменения кода без повышения версии.
+Фильтров по путям нет: изменения tests, scripts, specs и самих workflows также проверяются.
+
+На Ubuntu и Windows с Node.js 24 выполняются `npm ci --ignore-scripts` по lockfile,
+сборка, `npm run smoke:startup-series` и затем `npm run verify`.
+Серия фиксирует первый и пять последующих запусков свежих процессов Node,
+время готовности/завершения и хеш сборки; холодный файловый кеш не предполагается.
+Обе платформы проверяются независимо: отказ одной не отменяет другую.
+Единая команда verify включает проверку OpenAPI и маршрутов, test:openapi,
+release- и smoke-start-тесты, проверку типов, offline transport/API/MCP-тесты, сборку и оба smoke-теста.
+В CI `TIMEWEB_TOKEN` явно пустой; cloud-токены и repository secrets не требуются.
+Это offline-проверки: они не подтверждают production-совместимость Timeweb API.
+
+Verify имеет только `contents: read`, не публикует пакет и не создаёт теги/releases.
+Новые запуски отменяют устаревшие проверки того же PR/ref, не затрагивая релизный workflow.
+Проверка сама по себе не делает status check обязательным для merge:
+branch protection/rulesets настраиваются отдельно. Настройки GitHub этим workflow не меняются.
 
 ## Выпуск новой версии
 
@@ -374,4 +397,5 @@ API-клиенты в `src/api` поддерживаются вручную. К�
 
 ## Лицензия
 
-В `package.json` указано `UNLICENSED`, отдельный файл лицензии отсутствует. Не предполагайте разрешение на распространение или повторное лицензирование кода без согласования с правообладателем.
+Проект распространяется по лицензии [MIT](LICENSE).
+Copyright (c) 2026 ichinya.

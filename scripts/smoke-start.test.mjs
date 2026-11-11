@@ -97,6 +97,11 @@ test("cleanup escalates to SIGKILL when graceful termination does not close", as
   report(await runStartupProbe({ spawnProcess: fake.spawnProcess, cleanupMs: 20 }), "ready");
   assert.deepEqual(signals, ["SIGTERM", "SIGKILL"]);
 });
+test("POSIX process ignoring SIGTERM is really terminated with SIGKILL", { skip: process.platform === "win32" ? "Windows terminates processes directly; POSIX signal handling is checked on Linux" : false }, async () => {
+  const result = await real(`process.on('SIGTERM',()=>{});process.stderr.write(${JSON.stringify(marker)});setInterval(()=>{},1000)`, "ready", { cleanupMs: 100 });
+  assert.equal(result.signal, "SIGKILL");
+  assert.equal(result.cleanupFailed, false);
+});
 test("failed cleanup is bounded, detaches streams and never reports ready", async () => {
   const fake = simulated(c => c.stderr.write(marker));
   const result = report(await runStartupProbe({ spawnProcess: fake.spawnProcess, cleanupMs: 20 }), "cleanup_timeout");
