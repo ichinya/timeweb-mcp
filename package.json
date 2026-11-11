@@ -14,7 +14,7 @@
     "test:openapi": "node --test scripts/openapi.test.mjs",
     "test:smoke-start": "node --test scripts/smoke-start.test.mjs scripts/startup-config.test.mjs",
     "test:transport": "node scripts/test-transport.mjs",
-    "smoke": "node scripts/smoke-start.mjs && node scripts/smoke-mcp.mjs",
+    "smoke": "node scripts/smoke-start.mjs && node scripts/smoke-mcp.mjs && node scripts/smoke-bundle.mjs",
     "smoke:startup-series": "node scripts/smoke-start-series.mjs",
     "verify": "npm run validate:openapi && npm run test:openapi && npm run test:release && npm run test:smoke-start && npm run type-check && npm run test:transport && npm run build && npm run smoke",
     "normalize:openapi": "node scripts/normalize-openapi.mjs",
