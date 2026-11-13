@@ -21,7 +21,7 @@ const inputSchema = {
   is_keepalive: z.boolean().optional().describe("Keepalive (опц.)"),
   proto: BalancerProtoEnum.optional().describe("Протокол (опц.)"),
   port: z.number().optional().describe("Порт (опц.)"),
-  path: z.string().optional().describe("Путь (опц.)"),
+  health_check_path: z.string().optional().describe("HTTP-путь health-check на backend балансировщика (например /health). Опционален: если не передан, текущий путь сохраняется; не путь файловой системы"),
   inter: z.number().optional().describe("Интервал проверки (опц.)"),
   timeout: z.number().optional().describe("Таймаут ответа (опц.)"),
   fall: z.number().optional().describe("Порог ошибок (опц.)"),
@@ -63,7 +63,7 @@ const handler = async (params: {
   is_keepalive?: boolean;
   proto?: "http" | "http2" | "https" | "tcp";
   port?: number;
-  path?: string;
+  health_check_path?: string;
   inter?: number;
   timeout?: number;
   fall?: number;
@@ -96,7 +96,6 @@ const handler = async (params: {
         "is_keepalive",
         "proto",
         "port",
-        "path",
         "inter",
         "timeout",
         "fall",
@@ -109,6 +108,10 @@ const handler = async (params: {
         "comment",
       ] as const
     ).forEach(copyIfSet);
+
+    if (typeof params.health_check_path !== "undefined") {
+      payload.path = params.health_check_path;
+    }
 
     if (params.certificate_type) {
       payload.certificates = {

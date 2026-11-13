@@ -28,7 +28,8 @@ import { AppsApiClient } from "../src/api/apps";
 import { ServersApiClient } from "../src/api/servers";
 import { DomainsApiClient } from "../src/api/domains";
 import { RequestOptions } from "../src/api/client";
-import { serversApiClient, domainsApiClient } from "../src/api";
+import { serversApiClient, domainsApiClient, balancersApiClient } from "../src/api";
+import { BalancersApiClient } from "../src/api/balancers";
 import { listServersAction, listServersPageAction } from "../src/actions/list-servers.action";
 import { listDomainsAction, listDomainsPageAction } from "../src/actions/list-domains.action";
 import { listServersHandler, listServersTool } from "../src/tools/list-servers.tool";
@@ -64,6 +65,46 @@ async function connect(server: McpServer) {
   return { client, close: async () => { await client.close(); await server.close(); } };
 }
 const key = { id: 7, name: "offline", body: "ssh-ed25519 offline", created_at: "2026-01-01T00:00:00Z", used_by: [], is_default: false };
+
+test("balancer MCP health-check paths map to API path and partial updates preserve omission", async () => {
+  const requests: { method: string | undefined; url: string | undefined; body: Record<string, unknown> }[] = [];
+  const api = new BalancersApiClient({ token: "offline-dummy", adapter: async config => {
+    requests.push({ method: config.method, url: config.url, body: JSON.parse(config.data) });
+    return response(config, { balancer: { id: 7, name: "offline", created_at: "2026-01-01T00:00:00Z" } });
+  } });
+  const create = mock.method(balancersApiClient, "createBalancer", api.createBalancer.bind(api));
+  const update = mock.method(balancersApiClient, "updateBalancer", api.updateBalancer.bind(api));
+  const server = new McpServer({ name: "offline-balancers", version: "1" });
+  registerProjectTools(server);
+  const pair = await connect(server);
+  try {
+    const { tools: listed } = await pair.client.listTools();
+    const createSchema = listed.find(tool => tool.name === "create_balancer")!.inputSchema;
+    const updateSchema = listed.find(tool => tool.name === "update_balancer")!.inputSchema;
+    assert.ok(createSchema.required?.includes("health_check_path"));
+    assert.ok(!updateSchema.required?.includes("health_check_path"));
+    assert.equal(Object.hasOwn(createSchema.properties!, "path"), false);
+    assert.equal(Object.hasOwn(updateSchema.properties!, "path"), false);
+    const params = { name: "offline", algo: "roundrobin", is_sticky: false, is_use_proxy: false,
+      is_ssl: false, is_keepalive: false, proto: "http", inter: 10, timeout: 5, fall: 3, rise: 2, preset_id: 1 };
+    const created = await pair.client.callTool({ name: "create_balancer", arguments: { ...params, health_check_path: "/ready?service=api" } });
+    assert.notEqual(created.isError, true);
+    assert.deepEqual(requests[0], { method: "post", url: "/api/v1/balancers", body: { ...params, path: "/ready?service=api" } });
+    const changed = await pair.client.callTool({ name: "update_balancer", arguments: { balancer_id: 7, health_check_path: "/health" } });
+    assert.notEqual(changed.isError, true);
+    assert.deepEqual(requests[1], { method: "patch", url: "/api/v1/balancers/7", body: { path: "/health" } });
+    const renamed = await pair.client.callTool({ name: "update_balancer", arguments: { balancer_id: 7, name: "renamed" } });
+    assert.notEqual(renamed.isError, true);
+    assert.deepEqual(requests[2].body, { name: "renamed" });
+    assert.equal(requests.length, 3);
+    // The old argument must not satisfy the new required creation schema.
+    const invalid = await pair.client.callTool({ name: "create_balancer", arguments: { ...params, path: "/legacy" } });
+    assert.equal(invalid.isError, true);
+    assert.equal(requests.length, 3);
+  } finally {
+    create.mock.restore(); update.mock.restore(); await pair.close();
+  }
+});
 
 function resourceFixture(load: (name: string, provider?: string) => Promise<unknown>) {
   return {

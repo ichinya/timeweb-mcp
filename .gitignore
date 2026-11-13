@@ -39,6 +39,11 @@ pids/
 # Coverage directory used by tools like istanbul
 coverage/
 
+# Local MCP metadata audit reports
+mcpunit.json
+mcpunit.sarif
+mcpunit.md
+
 # nyc test coverage
 .nyc_output/
 

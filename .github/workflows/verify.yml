@@ -49,3 +49,40 @@ jobs:
 
       - name: Verify
         run: npm run verify
+
+      # Advisory until findings have been reviewed and a baseline is agreed.
+      - name: Audit MCP metadata (advisory)
+        id: mcpunit
+        continue-on-error: true
+        uses: lee-to/mcpunit@7d41dad218652eacedc0a80c7d35bcf3578402bd # v1.5.0
+        with:
+          version: v1.5.0
+          cmd: node dist/index.js
+          min-score: "0"
+          json-out: mcpunit.json
+          sarif-out: mcpunit.sarif
+          markdown-out: mcpunit.md
+          upload-sarif: "false"
+
+      - name: Add MCP audit to job summary
+        if: always() && (steps.mcpunit.outcome == 'success' || steps.mcpunit.outcome == 'failure')
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -f mcpunit.md ]; then
+            cat mcpunit.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'MCP metadata audit did not produce a report; see the advisory step logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Save MCP audit reports
+        if: always() && (steps.mcpunit.outcome == 'success' || steps.mcpunit.outcome == 'failure')
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcpunit-${{ matrix.os }}
+          path: |
+            mcpunit.json
+            mcpunit.sarif
+            mcpunit.md
+          if-no-files-found: warn

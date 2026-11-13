@@ -32,9 +32,9 @@ const inputSchema = {
   proto: BalancerProtoEnum.describe(
     "ОБЯЗАТЕЛЬНОЕ ПОЛЕ - протокол: http | http2 | https | tcp"
   ),
-  path: z
+  health_check_path: z
     .string()
-    .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - путь health-check (напр. /)"),
+    .describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - HTTP-путь health-check на backend балансировщика (например /health); не путь файловой системы"),
   inter: z.number().describe("ОБЯЗАТЕЛЬНОЕ ПОЛЕ - интервал проверки"),
   timeout: z
     .number()
@@ -108,7 +108,7 @@ const handler = async (params: {
   is_ssl: boolean;
   is_keepalive: boolean;
   proto: "http" | "http2" | "https" | "tcp";
-  path: string;
+  health_check_path: string;
   inter: number;
   timeout: number;
   fall: number;
@@ -139,7 +139,7 @@ const handler = async (params: {
       is_ssl: params.is_ssl,
       is_keepalive: params.is_keepalive,
       proto: params.proto,
-      path: params.path,
+      path: params.health_check_path,
       inter: params.inter,
       timeout: params.timeout,
       fall: params.fall,
@@ -202,7 +202,7 @@ export const createBalancerTool = {
   name: ToolNames.CREATE_BALANCER,
   title: "Создание балансировщика",
   description:
-    "Создаёт новый балансировщик нагрузки. Обязательны: name, algo, is_sticky, is_use_proxy, is_ssl, is_keepalive, proto, path, inter, timeout, fall, rise, preset_id. preset_id получай через list_balancer_presets. Для приватной сети задай network_id. Для SSL — certificate_type.",
+    "Создаёт новый балансировщик нагрузки. Обязательны: name, algo, is_sticky, is_use_proxy, is_ssl, is_keepalive, proto, health_check_path, inter, timeout, fall, rise, preset_id. health_check_path — HTTP-путь проверки состояния backend, например /health. preset_id получай через list_balancer_presets. Для приватной сети задай network_id. Для SSL — certificate_type.",
   inputSchema,
   handler,
 };
